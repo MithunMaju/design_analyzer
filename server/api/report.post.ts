@@ -15,31 +15,40 @@ export default defineEventHandler(async (event) => {
   }
   const compactEvidence = {
     meta: curated.meta,
-    routes: curated.routes,
-    assetManifest: curated.assetManifest,
-    customProperties: curated.customProperties || curated.tokens?.customProperties || [],
-    gradientTokens: curated.gradientTokens || curated.tokens?.gradientTokens || [],
-    glowTokens: curated.glowTokens || curated.tokens?.glowTokens || [],
+    routes: (curated.routes || []).slice(0, 20),
+    assetManifest: {
+      cssUrls: (curated.assetManifest?.cssUrls || []).slice(0, 10),
+      jsUrls: (curated.assetManifest?.jsUrls || []).slice(0, 10),
+    },
+    customProperties: (curated.customProperties || curated.tokens?.customProperties || []).slice(0, 40),
+    gradientTokens: (curated.gradientTokens || curated.tokens?.gradientTokens || []).slice(0, 10),
+    glowTokens: (curated.glowTokens || curated.tokens?.glowTokens || []).slice(0, 10),
     detectedLibraries: curated.detectedLibraries,
     fonts: curated.fonts,
     domEvidence: {
       desktop: {
         headings: curated.domEvidence?.desktop?.headings,
-        navLinks: curated.domEvidence?.desktop?.navLinks,
-        visibleButtons: curated.domEvidence?.desktop?.visibleButtons,
+        navLinks: (curated.domEvidence?.desktop?.navLinks || []).slice(0, 15),
+        visibleButtons: (curated.domEvidence?.desktop?.visibleButtons || []).slice(0, 15),
         bodyFont: curated.domEvidence?.desktop?.bodyFont,
         h1Font: curated.domEvidence?.desktop?.h1Font,
-        colorSamples: curated.domEvidence?.desktop?.colorSamples,
+        colorSamples: (curated.domEvidence?.desktop?.colorSamples || []).slice(0, 20),
         computedStyles: curated.domEvidence?.desktop?.computedStyles,
-        microCopy: curated.domEvidence?.desktop?.microCopy,
-        cardDescriptions: curated.domEvidence?.desktop?.cardDescriptions,
+        microCopy: (curated.domEvidence?.desktop?.microCopy || []).slice(0, 15),
+        cardDescriptions: (curated.domEvidence?.desktop?.cardDescriptions || []).slice(0, 10),
       },
       mobile: {
         hasNavToggle: curated.domEvidence?.mobile?.hasNavToggle,
-        navLinks: curated.domEvidence?.mobile?.navLinks,
+        navLinks: (curated.domEvidence?.mobile?.navLinks || []).slice(0, 10),
         computedStyles: curated.domEvidence?.mobile?.computedStyles,
       },
-      cssEvidence: curated.domEvidence?.cssEvidence,
+      cssEvidence: curated.domEvidence?.cssEvidence ? {
+        colors: (curated.domEvidence.cssEvidence.colors || []).slice(0, 30),
+        mediaQueries: (curated.domEvidence.cssEvidence.mediaQueries || []).slice(0, 10),
+        fontFamilies: (curated.domEvidence.cssEvidence.fontFamilies || []).slice(0, 15),
+        borderRadii: (curated.domEvidence.cssEvidence.borderRadii || []).slice(0, 15),
+        shadows: (curated.domEvidence.cssEvidence.shadows || []).slice(0, 15),
+      } : undefined,
     },
   };
 
@@ -62,7 +71,7 @@ export default defineEventHandler(async (event) => {
       model: 'llama-3.3-70b-versatile',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.2,
-      max_tokens: 2500,
+      max_tokens: 1800,
     }),
     signal: AbortSignal.timeout(60000),
   });
