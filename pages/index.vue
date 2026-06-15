@@ -140,6 +140,7 @@
                Generate Report with Gemini
               </button>
               <p class="text-dim text-xs mt-3">Uses Gemini API — free tier</p>
+              <p v-if="reportError" class="text-red-400 font-mono text-xs mt-3">{{ reportError }}</p>
             </div>
           </div>
 
@@ -399,7 +400,10 @@ async function analyze() {
 }
 
 async function generateReport() {
-  if (!result.value) return;
+  if (!result.value) {
+    reportError.value = 'Please analyse a URL first — enter a URL above and click Analyse.';
+    return;
+  }
   reportLoading.value = true;
   reportError.value = '';
 
@@ -413,6 +417,7 @@ async function generateReport() {
       },
     });
     report.value = (res as any).report;
+    downloadReport();
 
     try {
       await $fetch('/api/cache-report', {
