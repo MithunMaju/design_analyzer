@@ -4,6 +4,11 @@ export default defineEventHandler(async (event) => {
 
   const config = useRuntimeConfig();
   const apiKey = config.groqApiKey;
+
+  console.log('[DEBUG] apiKey type:', typeof apiKey);
+  console.log('[DEBUG] apiKey length:', apiKey?.length);
+  console.log('[DEBUG] apiKey prefix:', apiKey?.slice(0, 8));
+  console.log('[DEBUG] apiKey suffix:', apiKey?.slice(-4));
   const compactEvidence = {
     meta: curated.meta,
     routes: curated.routes,
