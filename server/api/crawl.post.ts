@@ -40,38 +40,36 @@ export default defineEventHandler(async (event) => {
 
   // ─── Helper: take a screenshot via Browserless /function endpoint ────────
   async function takeScreenshot(width: number, height: number): Promise<string> {
-    const screenshotScript = `
-      export default async ({ page, context }) => {
-        const { targetUrl, width, height } = context;
-        await page.setViewport({ width, height, deviceScaleFactor: 1 });
-        await page.setUserAgent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36');
-        await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
-        await new Promise(r => setTimeout(r, 2500));
-        await page.evaluate(async () => {
-          const delay = ms => new Promise(r => setTimeout(r, ms));
-          const totalHeight = document.body.scrollHeight;
-          const step = Math.floor(window.innerHeight * 0.8);
-          for (let pos = 0; pos < totalHeight; pos += step) {
-            window.scrollTo(0, pos);
-            await delay(120);
-          }
-          window.scrollTo(0, 0);
-          await delay(500);
-        });
-        const screenshot = await page.screenshot({ type: 'jpeg', quality: 75, fullPage: true });
-        const base64 = Buffer.from(screenshot).toString('base64');
-        return { data: { base64 } };
-      };
-    `;
+    const screenshotCode = `export default async ({ page, context }) => {
+      const { targetUrl, width, height } = context;
+      await page.setViewport({ width, height, deviceScaleFactor: 1 });
+      await page.setUserAgent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36');
+      await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await new Promise(r => setTimeout(r, 2500));
+      await page.evaluate(async () => {
+        const delay = ms => new Promise(r => setTimeout(r, ms));
+        const totalHeight = document.body.scrollHeight;
+        const step = Math.floor(window.innerHeight * 0.8);
+        for (let pos = 0; pos < totalHeight; pos += step) {
+          window.scrollTo(0, pos);
+          await delay(120);
+        }
+        window.scrollTo(0, 0);
+        await delay(500);
+      });
+      const screenshot = await page.screenshot({ type: 'jpeg', quality: 75, fullPage: true });
+      const base64 = Buffer.from(screenshot).toString('base64');
+      return { data: { base64 }, type: 'application/json' };
+    };`;
     const res = await fetch(`${BROWSERLESS_BASE}/function?token=${apiKey}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ code: screenshotScript, context: { targetUrl, width, height } }),
+      body: JSON.stringify({ code: screenshotCode, context: { targetUrl, width, height } }),
       signal: AbortSignal.timeout(60000),
     });
     if (!res.ok) throw new Error(`Screenshot failed: ${res.status}`);
     const json = await res.json();
-    return json?.data?.base64 || '';
+    return json?.base64 || '';
   }
 
   // ─── The DOM extraction script — runs inside the real browser ─────────────
