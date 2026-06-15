@@ -3,7 +3,8 @@ export default defineEventHandler(async (event) => {
   if (!curated) throw createError({ statusCode: 400, message: 'curated is required' });
 
   const cfEnv = (event.context.cloudflare?.env || {}) as Record<string, string>;
-  const apiKey = cfEnv.GROQ_API_KEY || cfEnv.NUXT_GROQ_API_KEY || useRuntimeConfig().groqApiKey;
+  const config = useRuntimeConfig(event);
+  const apiKey = cfEnv.GROQ_API_KEY || cfEnv.NUXT_GROQ_API_KEY || (config as any).groqApiKey || process.env.GROQ_API_KEY;
   if (!apiKey) throw createError({ statusCode: 500, message: 'GROQ_API_KEY not set' });
 
   const compactEvidence = {
