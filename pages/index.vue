@@ -334,6 +334,7 @@ const progress = ref(0);
 const error = ref('');
 const result = ref<any>(null);
 const report = ref('');
+const reportError = ref('');
 const activeTab = ref('report');
 const copied = ref(false);
 const totalLibraryCount = computed(() => {
@@ -362,6 +363,7 @@ async function analyze() {
   error.value = '';
   result.value = null;
   report.value = '';
+  reportError.value = '';
   progress.value = 0;
   activeTab.value = 'report';
 
@@ -399,6 +401,7 @@ async function analyze() {
 async function generateReport() {
   if (!result.value) return;
   reportLoading.value = true;
+  reportError.value = '';
 
   try {
     const res = await $fetch('/api/report', {
@@ -423,7 +426,7 @@ async function generateReport() {
       // non-critical
     }
   } catch (err: any) {
-    error.value = err?.data?.message || 'Report generation failed';
+    reportError.value = err?.data?.message || err?.message || 'Report generation failed';
   } finally {
     reportLoading.value = false;
   }
