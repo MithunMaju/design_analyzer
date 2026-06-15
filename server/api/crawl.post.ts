@@ -46,8 +46,8 @@ export default defineEventHandler(async (event) => {
       '  await page.setViewport({ width: context.w, height: context.h, deviceScaleFactor: 1 });',
       '  await page.goto(context.url, { waitUntil: "domcontentloaded", timeout: 30000 });',
       '  await new Promise(r => setTimeout(r, 2000));',
-      '  const shot = await page.screenshot({ type: "jpeg", quality: 75, fullPage: true });',
-      '  return { data: Buffer.from(shot).toString("base64"), type: "application/json" };',
+      '  const shot = await page.screenshot({ type: "jpeg", quality: 75, fullPage: true, encoding: "base64" });',
+      '  return { data: shot, type: "application/json" };',
       '};',
     ].join("\n");
     const res = await fetch(`${BROWSERLESS_BASE}/function?token=${apiKey}&--width=${w}&--height=${h}`, {
