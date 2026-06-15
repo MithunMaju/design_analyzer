@@ -38,36 +38,40 @@ export default defineEventHandler(async (event) => {
     return res.json();
   }
 
-  // ─── Helper: take a screenshot via Browserless /screenshot endpoint ────────
+  // ─── Helper: take a screenshot via Browserless /function endpoint ────────
   async function takeScreenshot(width: number, height: number): Promise<string> {
-    const res = await fetch(`${BROWSERLESS_BASE}/screenshot?token=${apiKey}`, {
+    const screenshotScript = `
+      export default async ({ page, context }) => {
+        const { targetUrl, width, height } = context;
+        await page.setViewport({ width, height, deviceScaleFactor: 1 });
+        await page.setUserAgent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36');
+        await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await new Promise(r => setTimeout(r, 2500));
+        await page.evaluate(async () => {
+          const delay = ms => new Promise(r => setTimeout(r, ms));
+          const totalHeight = document.body.scrollHeight;
+          const step = Math.floor(window.innerHeight * 0.8);
+          for (let pos = 0; pos < totalHeight; pos += step) {
+            window.scrollTo(0, pos);
+            await delay(120);
+          }
+          window.scrollTo(0, 0);
+          await delay(500);
+        });
+        const screenshot = await page.screenshot({ type: 'jpeg', quality: 75, fullPage: true });
+        const base64 = Buffer.from(screenshot).toString('base64');
+        return { data: { base64 } };
+      };
+    `;
+    const res = await fetch(`${BROWSERLESS_BASE}/function?token=${apiKey}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        url: targetUrl,
-        options: { type: 'jpeg', quality: 75, fullPage: true },
-        viewport: { width, height, deviceScaleFactor: 1 },
-        waitForTimeout: 3000,
-        // Scroll to trigger reveal animations before screenshotting
-        evaluate: `
-          async () => {
-            const delay = ms => new Promise(r => setTimeout(r, ms));
-            const totalHeight = document.body.scrollHeight;
-            const step = Math.floor(window.innerHeight * 0.8);
-            for (let pos = 0; pos < totalHeight; pos += step) {
-              window.scrollTo(0, pos);
-              await delay(120);
-            }
-            window.scrollTo(0, 0);
-            await delay(500);
-          }
-        `,
-      }),
+      body: JSON.stringify({ code: screenshotScript, context: { targetUrl, width, height } }),
       signal: AbortSignal.timeout(60000),
     });
     if (!res.ok) throw new Error(`Screenshot failed: ${res.status}`);
-    const buf = await res.arrayBuffer();
-    return Buffer.from(buf).toString('base64');
+    const json = await res.json();
+    return json?.data?.base64 || '';
   }
 
   // ─── The DOM extraction script — runs inside the real browser ─────────────
@@ -285,13 +289,11 @@ export default defineEventHandler(async (event) => {
   `;
 
   try {
-    // ─── Run desktop + mobile extractions in parallel ─────────────────────
-    const [desktopResult, mobileResult, desktopScreenshot, mobileScreenshot] = await Promise.all([
-      runInBrowser(domExtractionScript, { width: 1440, height: 1000 }),
-      runInBrowser(domExtractionScript, { width: 390, height: 844 }),
-      takeScreenshot(1440, 1000),
-      takeScreenshot(390, 844),
-    ]);
+    // ─── Run sequentially to stay within Browserless free tier (2 concurrent max) ──
+    const desktopResult = await runInBrowser(domExtractionScript, { width: 1440, height: 1000 });
+    const desktopScreenshot = await takeScreenshot(1440, 1000);
+    const mobileResult = await runInBrowser(domExtractionScript, { width: 390, height: 844 });
+    const mobileScreenshot = await takeScreenshot(390, 844);
 
     const desktop = desktopResult?.data || {};
     const mobile = mobileResult?.data || {};
