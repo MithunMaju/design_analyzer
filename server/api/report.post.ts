@@ -5,8 +5,10 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event);
   const apiKey = config.groqApiKey || event.context?.cloudflare?.env?.GROQ_API_KEY || '';
 
-  console.log('[DEBUG] apiKey length:', apiKey?.length);
-  console.log('[DEBUG] apiKey prefix:', apiKey?.slice(0, 7));
+  console.log('[DEBUG] context keys:', Object.keys(event.context || {}));
+  console.log('[DEBUG] cloudflare keys:', Object.keys(event.context?.cloudflare || {}));
+  console.log('[DEBUG] cloudflare.env keys:', Object.keys(event.context?.cloudflare?.env || {}));
+  console.log('[DEBUG] process.env keys (filtered):', Object.keys(process.env || {}).filter(k => k.includes('GROQ') || k.includes('NUXT')));
 
   if (!apiKey) {
     throw createError({ statusCode: 500, message: 'GROQ_API_KEY not available at runtime' });
