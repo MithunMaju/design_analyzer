@@ -347,6 +347,24 @@ export default defineEventHandler(async (event) => {
       },
       routes: uniq([...(dd.htmlRoutes || [])]),
       tokens: { customProperties, gradientTokens, glowTokens },
+      customProperties,
+      gradientTokens,
+      glowTokens,
+      apiEndpoints: [],
+      detectedLibraries: {
+        domConfirmed: uniq(dd.libraryEvidence || []),
+        scriptConfirmed: [],
+        bundleHints: [],
+      },
+      fonts: cssEvidence.fontFamilies || [],
+      tailwindVersion: null,
+      tailwindArbitraryValues: {
+        colors: [],
+        spacing: [],
+        sizing: [],
+        typography: [],
+        shadows: [],
+      },
       domEvidence: {
         desktop: {
           stats: dd.stats || [],
