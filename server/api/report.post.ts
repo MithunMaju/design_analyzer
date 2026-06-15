@@ -3,8 +3,8 @@ export default defineEventHandler(async (event) => {
   if (!curated) throw createError({ statusCode: 400, message: 'curated is required' });
 
   const cfEnv = (event.context.cloudflare?.env || {}) as Record<string, string>;
-  const apiKey = cfEnv.GEMINI_API_KEY || cfEnv.NUXT_GEMINI_API_KEY || useRuntimeConfig().geminiApiKey;
-  if (!apiKey) throw createError({ statusCode: 500, message: 'GEMINI_API_KEY not set' });
+  const apiKey = cfEnv.GROQ_API_KEY || cfEnv.NUXT_GROQ_API_KEY || useRuntimeConfig().groqApiKey;
+  if (!apiKey) throw createError({ statusCode: 500, message: 'GROQ_API_KEY not set' });
 
   const compactEvidence = {
     meta: curated.meta,
@@ -45,15 +45,17 @@ export default defineEventHandler(async (event) => {
     JSON.stringify(compactEvidence, null, 2),
   ].join('\n');
 
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`, {
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${apiKey}`,
+    },
     body: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.2,
-        maxOutputTokens: 2500,
-      },
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.2,
+      max_tokens: 2500,
     }),
     signal: AbortSignal.timeout(60000),
   });
@@ -62,17 +64,14 @@ export default defineEventHandler(async (event) => {
     const text = await res.text().catch(() => '');
     throw createError({
       statusCode: res.status,
-      message: `Gemini error ${res.status}: ${text.slice(0, 240)}`,
+      message: `Groq error ${res.status}: ${text.slice(0, 240)}`,
     });
   }
 
   const json = await res.json();
-  const report = json?.candidates?.[0]?.content?.parts
-    ?.map((part: any) => part.text || '')
-    .join('')
-    .trim();
+  const report = json?.choices?.[0]?.message?.content?.trim();
 
-  if (!report) throw createError({ statusCode: 502, message: 'Gemini returned an empty report' });
+  if (!report) throw createError({ statusCode: 502, message: 'Groq returned an empty report' });
 
   return { report };
 });
