@@ -28,7 +28,7 @@ function dedupeSections(markdown: string): string {
 export default defineEventHandler(async (event) => {
   const { curated, screenshot, mobileScreenshot } = await readBody(event);
   const config = useRuntimeConfig();
-  const apiKey = config.geminiApiKey;
+  const apiKey = config.geminiApiKey || process.env.GEMINI_API_KEY;
   if (!apiKey) throw createError({ statusCode: 500, message: 'GEMINI_API_KEY not set' });
 
  const systemPrompt = `You are a senior design systems engineer and design strategist producing a Design Architecture Report for frontend engineers and product designers who will replicate this site's design quality without copying protected source.

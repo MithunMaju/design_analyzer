@@ -13,8 +13,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Invalid URL' });
   }
 
-  const config = useRuntimeConfig();
-  const apiKey = config.browserlessApiKey;
+  const cfEnv = (event.context.cloudflare?.env || {}) as Record<string, string>;
+  const apiKey = cfEnv.BROWSERLESS_API_KEY || cfEnv.NUXT_BROWSERLESS_API_KEY || useRuntimeConfig().browserlessApiKey;
   if (!apiKey) throw createError({ statusCode: 500, message: 'BROWSERLESS_API_KEY not set' });
 
   const BROWSERLESS_BASE = `https://production-sfo.browserless.io`;
