@@ -2,13 +2,15 @@ export default defineEventHandler(async (event) => {
   const { curated } = await readBody(event);
   if (!curated) throw createError({ statusCode: 400, message: 'curated is required' });
 
-  const config = useRuntimeConfig();
-  const apiKey = config.groqApiKey;
+  const config = useRuntimeConfig(event);
+  const apiKey = config.groqApiKey || event.context?.cloudflare?.env?.GROQ_API_KEY || '';
 
-  console.log('[DEBUG] apiKey type:', typeof apiKey);
   console.log('[DEBUG] apiKey length:', apiKey?.length);
-  console.log('[DEBUG] apiKey prefix:', apiKey?.slice(0, 8));
-  console.log('[DEBUG] apiKey suffix:', apiKey?.slice(-4));
+  console.log('[DEBUG] apiKey prefix:', apiKey?.slice(0, 7));
+
+  if (!apiKey) {
+    throw createError({ statusCode: 500, message: 'GROQ_API_KEY not available at runtime' });
+  }
   const compactEvidence = {
     meta: curated.meta,
     routes: curated.routes,
