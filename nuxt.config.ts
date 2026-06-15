@@ -3,8 +3,8 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss'],
   runtimeConfig: {
-    geminiApiKey: process.env.GEMINI_API_KEY,
-    browserlessApiKey: process.env.BROWSERLESS_API_KEY,
+    geminiApiKey: process.env.GEMINI_API_KEY || '',
+    browserlessApiKey: process.env.BROWSERLESS_API_KEY || '',
     public: {},
   },
   nitro: {
