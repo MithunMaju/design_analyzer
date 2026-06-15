@@ -2,7 +2,7 @@ export default defineEventHandler(async (event) => {
   const { curated } = await readBody(event);
   if (!curated) throw createError({ statusCode: 400, message: 'curated is required' });
 
-  const apiKey = 'your_actual_groq_key_here';
+  const apiKey = 'REMOVED_SECRET';
   const compactEvidence = {
     meta: curated.meta,
     routes: curated.routes,
