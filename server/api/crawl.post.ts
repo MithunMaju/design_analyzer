@@ -40,12 +40,22 @@ export default defineEventHandler(async (event) => {
 
   // ─── Helper: take a screenshot via Browserless /function endpoint ────────
   async function takeScreenshot(w: number, h: number): Promise<string> {
-    // Send as application/javascript — simplest format, no JSON escaping issues
     const code = [
       'export default async ({ page, context }) => {',
       '  await page.setViewport({ width: context.w, height: context.h, deviceScaleFactor: 1 });',
-      '  await page.goto(context.url, { waitUntil: "domcontentloaded", timeout: 30000 });',
-      '  await new Promise(r => setTimeout(r, 2000));',
+      '  await page.goto(context.url, { waitUntil: "networkidle2", timeout: 30000 }).catch(() => {});',
+      '  // Scroll to trigger lazy loading and reveal animations',
+      '  await page.evaluate(async () => {',
+      '    const delay = ms => new Promise(r => setTimeout(r, ms));',
+      '    const totalHeight = document.body.scrollHeight;',
+      '    const step = Math.floor(window.innerHeight * 0.8);',
+      '    for (let pos = 0; pos < totalHeight; pos += step) {',
+      '      window.scrollTo(0, pos);',
+      '      await delay(100);',
+      '    }',
+      '    window.scrollTo(0, 0);',
+      '  });',
+      '  await new Promise(r => setTimeout(r, 3000));',
       '  const shot = await page.screenshot({ type: "jpeg", quality: 75, fullPage: true, encoding: "base64" });',
       '  return { data: shot, type: "application/json" };',
       '};',
