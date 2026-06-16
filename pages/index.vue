@@ -89,7 +89,7 @@
 
       <!-- Screenshots -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div v-if="result.screenshot" class="bg-theme-card-bg border border-theme-border p-3 rounded-2xl overflow-hidden shadow-md flex flex-col h-[480px]">
+        <div v-if="result.screenshot" class="bg-theme-card-bg border border-theme-border p-3 rounded-2xl overflow-hidden shadow-md flex flex-col h-[600px]">
           <div class="px-3 py-2 border-b border-theme-border flex justify-between items-center flex-shrink-0">
             <div class="flex gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full bg-red-400/80"></span>
@@ -106,13 +106,14 @@
             />
           </div>
         </div>
-        <div v-if="result.mobileScreenshot" class="bg-theme-dark p-3 rounded-2xl overflow-hidden shadow-md text-white flex flex-col h-[480px]">
-          <div class="px-3 py-2 border-b border-theme-border/20 flex justify-between items-center flex-shrink-0">
-            <div class="flex gap-2 items-center">
-              <span class="w-1.5 h-1.5 rounded-full bg-white/40"></span>
-              <span class="w-8 h-1 rounded-full bg-white/20"></span>
+        <div v-if="result.mobileScreenshot" class="bg-theme-card-bg border border-theme-border p-3 rounded-2xl overflow-hidden shadow-md flex flex-col h-[600px]">
+          <div class="px-3 py-2 border-b border-theme-border flex justify-between items-center flex-shrink-0">
+            <div class="flex gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-400/80"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-yellow-400/80"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-green-400/80"></span>
             </div>
-            <span class="font-display text-[9px] text-theme-border/60 uppercase tracking-wider font-semibold">Mobile (390px)</span>
+            <span class="font-display text-[9px] text-theme-muted uppercase tracking-wider font-semibold">Mobile (390px)</span>
           </div>
           <div class="flex-1 overflow-y-auto mt-2 rounded-lg screenshot-viewport">
             <img
