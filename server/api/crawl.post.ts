@@ -57,7 +57,6 @@ export default defineEventHandler(async (event) => {
       '    }',
       '    window.scrollTo(0, 0);',
       '  });',
-      '  await new Promise(r => setTimeout(r, 4000));',
       '  const shot = await page.screenshot({ type: "jpeg", quality: 75, fullPage: true, encoding: "base64" });',
       '  return { data: shot, type: "application/json" };',
       '};',
