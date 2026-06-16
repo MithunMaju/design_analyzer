@@ -19,6 +19,8 @@ CORE RULES (apply to every section, no exceptions)
 
 6. LENGTH AND DEPTH — This is a long-form analytical document, not a summary. Each numbered section below should be substantive — multiple paragraphs and/or tables where evidence supports it. Sparse evidence in a section should be reported honestly ("Evidence for this section was limited to X [observed]; broader claims are marked [unverified]") rather than padded with generic text.
 
+7. SUBSECTION DEPTH — Every required subsection must contain at minimum 2 substantive paragraphs OR a table with at least 3 rows. A single sentence does not constitute a subsection. If the evidence is genuinely too sparse for 2 paragraphs, explain why the evidence is sparse and what that absence implies — that explanation itself counts as depth.
+
 ==================================================
 REQUIRED STRUCTURE (use these sections, in this order, as Markdown headings)
 ==================================================
@@ -33,9 +35,16 @@ This is the most important interpretive section. Cover, each as its own labeled 
 - **Brand Personality** — what the visual and copy evidence implies about brand voice/personality. Cite specific observed evidence (colors, copy strings, typography choices) as the basis for each personality trait.
 - **Emotional Atmosphere** — what mood/feeling the combination of color, spacing, imagery, and copy is likely to create for a visitor, grounded in observed evidence.
 - **Visual Metaphor** — if the evidence suggests the design is reaching for a particular metaphor or analogy (e.g. "marketplace as bazaar", "dashboard as control room"), state it and justify it from evidence; if there isn't enough evidence for this, say so [unverified].
+- **Signature Design Moves** — identify 3-5 specific, distinctive UI/UX choices that define this site's design character and differentiate it from a generic template. Each must be grounded in a directly observed element (a specific class name, color value, copy string, computed style, or structural pattern). Do not list generic traits like "uses flexbox" or "has a header" — only choices that are genuinely distinctive to this particular site.
 
 ## 3. Layout & Structure
 Describe the overall page architecture: header/nav structure, main content regions, footer, grid/flex patterns if computed styles reveal them, and how desktop vs mobile evidence differs. Reference specific nav links, headings, and computedStyles values.
+
+### Hierarchy Narrative
+Walk the primary scan path from top to bottom of the page — what draws the eye first, second, third, and why. Ground every step in observed evidence: element sizes, colors, placement, copy prominence, or computed style values. Do not write a generic "F-pattern" or "Z-pattern" claim without citing specific observed elements that support it.
+
+### Spatial Rhythm Intent
+Analyze the spacing patterns visible in the evidence — padding values, margin values, gap values from computedStyles, or their notable absence. What does the density or looseness of the layout communicate about the intended user experience? Cite specific observed padding/margin/gap values. If these values were not captured in the evidence, state that explicitly [unverified] and discuss what the visual density of the screenshots implies [inferred].
 
 ## 4. Typography
 List actual font-family values found (bodyFont, h1Font, cssEvidence.fontFamilies) verbatim. Discuss type hierarchy (heading vs body sizes/weights if present in computedStyles). Note any fallback stacks. If only generic system fonts are present, say so and discuss what that implies [inferred].
@@ -78,11 +87,6 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event);
   const apiKey = config.geminiApiKey || event.context?.cloudflare?.env?.GEMINI_API_KEY || '';
 
-  console.log('[DEBUG] context keys:', Object.keys(event.context || {}));
-  console.log('[DEBUG] cloudflare keys:', Object.keys(event.context?.cloudflare || {}));
-  console.log('[DEBUG] cloudflare.env keys:', Object.keys(event.context?.cloudflare?.env || {}));
-  console.log('[DEBUG] process.env keys (filtered):', Object.keys(process.env || {}).filter(k => k.includes('GEMINI') || k.includes('NUXT')));
-
   if (!apiKey) {
     throw createError({ statusCode: 500, message: 'GEMINI_API_KEY not available at runtime' });
   }
@@ -113,10 +117,10 @@ export default defineEventHandler(async (event) => {
         ],
         generationConfig: {
           temperature: 0.2,
-          maxOutputTokens: 8192,
+          maxOutputTokens: 16384,
         },
       }),
-      signal: AbortSignal.timeout(60000),
+      signal: AbortSignal.timeout(90000),
     }
   );
 
