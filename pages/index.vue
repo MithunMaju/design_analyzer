@@ -98,11 +98,11 @@
             </div>
             <span class="font-display text-[9px] text-theme-muted uppercase tracking-wider font-semibold">Desktop (1440px)</span>
           </div>
-          <div class="flex-1 overflow-y-auto mt-2 rounded-lg screenshot-viewport">
+          <div class="flex-1 overflow-x-hidden overflow-y-auto mt-2 rounded-lg screenshot-viewport">
             <img
               :src="`data:image/jpeg;base64,${result.screenshot}`"
               alt="Desktop screenshot"
-              class="w-full object-cover object-top"
+              class="w-full block h-auto object-cover object-top"
             />
           </div>
         </div>
@@ -115,11 +115,11 @@
             </div>
             <span class="font-display text-[9px] text-theme-muted uppercase tracking-wider font-semibold">Mobile (390px)</span>
           </div>
-          <div class="flex-1 overflow-y-auto mt-2 rounded-lg screenshot-viewport">
+          <div class="flex-1 overflow-x-hidden overflow-y-auto mt-2 rounded-lg screenshot-viewport">
             <img
               :src="`data:image/jpeg;base64,${result.mobileScreenshot}`"
               alt="Mobile screenshot"
-              class="w-full object-cover object-top"
+              class="w-full block h-auto object-cover object-top"
             />
           </div>
         </div>
