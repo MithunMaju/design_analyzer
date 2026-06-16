@@ -89,25 +89,38 @@
 
       <!-- Screenshots -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div v-if="result.screenshot" class="bg-theme-card-bg border border-theme-border p-3 rounded-2xl overflow-hidden shadow-md">
-          <div class="px-3 py-2 border-b border-theme-border flex justify-between items-center">
+        <div v-if="result.screenshot" class="bg-theme-card-bg border border-theme-border p-3 rounded-2xl overflow-hidden shadow-md flex flex-col h-[480px]">
+          <div class="px-3 py-2 border-b border-theme-border flex justify-between items-center flex-shrink-0">
+            <div class="flex gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-400/80"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-yellow-400/80"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-green-400/80"></span>
+            </div>
             <span class="font-display text-[9px] text-theme-muted uppercase tracking-wider font-semibold">Desktop (1440px)</span>
           </div>
-          <img
-            :src="`data:image/jpeg;base64,${result.screenshot}`"
-            alt="Desktop screenshot"
-            class="w-full mt-2 rounded-lg"
-          />
+          <div class="flex-1 overflow-y-auto mt-2 rounded-lg screenshot-viewport">
+            <img
+              :src="`data:image/jpeg;base64,${result.screenshot}`"
+              alt="Desktop screenshot"
+              class="w-full object-cover object-top"
+            />
+          </div>
         </div>
-        <div v-if="result.mobileScreenshot" class="bg-theme-dark p-3 rounded-2xl overflow-hidden shadow-md text-white">
-          <div class="px-3 py-2 border-b border-theme-border/20 flex justify-between items-center">
+        <div v-if="result.mobileScreenshot" class="bg-theme-dark p-3 rounded-2xl overflow-hidden shadow-md text-white flex flex-col h-[480px]">
+          <div class="px-3 py-2 border-b border-theme-border/20 flex justify-between items-center flex-shrink-0">
+            <div class="flex gap-2 items-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-white/40"></span>
+              <span class="w-8 h-1 rounded-full bg-white/20"></span>
+            </div>
             <span class="font-display text-[9px] text-theme-border/60 uppercase tracking-wider font-semibold">Mobile (390px)</span>
           </div>
-          <img
-            :src="`data:image/jpeg;base64,${result.mobileScreenshot}`"
-            alt="Mobile screenshot"
-            class="w-full mt-2 rounded-lg"
-          />
+          <div class="flex-1 overflow-y-auto mt-2 rounded-lg screenshot-viewport">
+            <img
+              :src="`data:image/jpeg;base64,${result.mobileScreenshot}`"
+              alt="Mobile screenshot"
+              class="w-full object-cover object-top"
+            />
+          </div>
         </div>
       </div>
 
@@ -466,4 +479,19 @@ function downloadReport() {
 .prose table th, .prose table td { border: 1px solid #e5e5e5; padding: 0.5rem 0.75rem; text-align: left; }
 .prose table th { background: #fafafa; color: #111111; font-family: 'Space Grotesk', sans-serif; }
 .prose blockquote { border-left: 2px solid #111111; padding-left: 1rem; color: #555555; opacity: 0.9; margin: 1rem 0; italic: true; }
+
+/* Custom scrollbar for scrollable screenshot viewports */
+.screenshot-viewport::-webkit-scrollbar {
+  width: 5px;
+}
+.screenshot-viewport::-webkit-scrollbar-track {
+  background: transparent;
+}
+.screenshot-viewport::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+.bg-theme-dark .screenshot-viewport::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+}
 </style>
