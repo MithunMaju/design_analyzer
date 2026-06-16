@@ -99,9 +99,9 @@
             class="w-full mt-2 rounded-lg"
           />
         </div>
-        <div v-if="result.mobileScreenshot" class="bg-theme-card-bg border border-theme-border p-3 rounded-2xl overflow-hidden shadow-md text-white">
-          <div class="px-3 py-2 border-b border-theme-border flex justify-between items-center">
-            <span class="font-display text-[9px] text-theme-muted uppercase tracking-wider font-semibold">Mobile (390px)</span>
+        <div v-if="result.mobileScreenshot" class="bg-theme-dark p-3 rounded-2xl overflow-hidden shadow-md text-white">
+          <div class="px-3 py-2 border-b border-theme-border/20 flex justify-between items-center">
+            <span class="font-display text-[9px] text-theme-border/60 uppercase tracking-wider font-semibold">Mobile (390px)</span>
           </div>
           <img
             :src="`data:image/jpeg;base64,${result.mobileScreenshot}`"
@@ -134,13 +134,13 @@
               <div class="flex justify-end gap-2 mb-6">
                 <button
                   @click="copyReport"
-                  class="px-4 py-2 bg-white hover:bg-neutral-200 text-black font-display text-[9px] uppercase tracking-widest shadow-sm rounded-lg transition-colors"
+                  class="px-4 py-2 bg-theme-dark hover:bg-theme-muted text-white font-display text-[9px] uppercase tracking-widest shadow-sm"
                 >
                   {{ copied ? 'Copied!' : 'Copy Markdown' }}
                 </button>
                 <button
                   @click="downloadReport"
-                  class="px-4 py-2 border border-white/20 hover:bg-white/10 text-white font-display text-[9px] uppercase tracking-widest shadow-sm rounded-lg transition-colors"
+                  class="px-4 py-2 bg-theme-dark hover:bg-theme-muted text-white font-display text-[9px] uppercase tracking-widest shadow-sm"
                 >
                   Download .md
                 </button>
@@ -153,7 +153,7 @@
             <div v-else class="text-center py-12">
               <button
                 @click="generateReport"
-                class="px-8 py-3 bg-white hover:bg-neutral-200 text-black font-display text-[10px] uppercase tracking-widest shadow-sm rounded-lg transition-colors"
+                class="px-8 py-3 bg-theme-dark hover:bg-theme-muted text-white font-display text-[10px] uppercase tracking-widest shadow-sm"
               >
                 Generate Report with Gemini
               </button>
@@ -191,7 +191,7 @@
             <div v-if="result.curated.detectedLibraries?.domConfirmed?.length" class="mb-4">
               <p class="font-display text-[10px] text-theme-muted uppercase tracking-widest mb-2">Confirmed (Runtime DOM Globals)</p>
               <div class="flex flex-wrap gap-2">
-                <span v-for="lib in result.curated.detectedLibraries.domConfirmed" :key="lib" class="px-3 py-1 bg-neutral-800 text-neutral-200 font-mono text-xs rounded-md">{{ lib }}</span>
+                <span v-for="lib in result.curated.detectedLibraries.domConfirmed" :key="lib" class="px-3 py-1 bg-theme-dark text-white font-mono text-xs">{{ lib }}</span>
               </div>
             </div>
 
@@ -215,7 +215,7 @@
                 <span
                   v-for="font in result.curated.fonts"
                   :key="font"
-                  class="px-3 py-1 bg-theme-bg border border-theme-border text-theme-dark font-mono text-xs rounded-md"
+                  class="px-3 py-1 bg-theme-bg border border-theme-dark text-theme-dark font-mono text-xs"
                 >
                   {{ font }}
                 </span>
@@ -259,7 +259,7 @@
 
           <!-- Tailwind tab -->
           <div v-if="activeTab === 'tailwind'" class="space-y-6">
-            <div v-if="result.curated.tailwindVersion" class="inline-flex items-center px-3 py-1 bg-neutral-800 text-neutral-200 text-xs font-mono rounded-md">
+            <div v-if="result.curated.tailwindVersion" class="inline-flex items-center px-3 py-1 bg-theme-dark text-white text-xs font-mono">
               {{ result.curated.tailwindVersion }}
             </div>
             <p v-else class="text-theme-muted text-xs font-mono">No Tailwind framework detected</p>
@@ -292,7 +292,7 @@
                   :key="color"
                   class="flex items-center gap-2 px-2 py-1 bg-theme-card-bg border border-theme-border"
                 >
-                  <div class="w-5 h-5 border border-theme-border" :style="{ background: color }"></div>
+                  <div class="w-5 h-5 border border-theme-dark/15" :style="{ background: color }"></div>
                   <span class="font-mono text-xs text-theme-dark">{{ color }}</span>
                 </div>
               </div>
@@ -450,20 +450,20 @@ function downloadReport() {
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Satisfy&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-.prose h1, .prose h2, .prose h3 { color: #ffffff; font-family: 'Space Grotesk', sans-serif; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.75rem; text-transform: uppercase; tracking-wide: true; }
+.prose h1, .prose h2, .prose h3 { color: #111111; font-family: 'Space Grotesk', sans-serif; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.75rem; text-transform: uppercase; tracking-wide: true; }
 .prose h1 { font-size: 1.3rem; }
 .prose h2 { font-size: 1.15rem; }
 .prose h3 { font-size: 1.05rem; }
-.prose p, .prose li { color: #a1a1aa; font-family: 'Inter', sans-serif; line-height: 1.6; margin-bottom: 0.85rem; font-size: 0.85em; }
-.prose code { color: #ffffff; background: #27272a; border: 1px solid #3f3f46; padding: 0.15rem 0.35rem; border-radius: 4px; font-size: 0.85em; font-family: 'JetBrains Mono', monospace; }
-.prose pre { background: #18181b; border: 1px solid #27272a; border-radius: 6px; padding: 1rem; margin: 1rem 0; overflow-x: auto; }
-.prose pre code { color: #ffffff; background: transparent; border: 0; padding: 0; }
-.prose a { color: #ffffff; text-decoration: underline; text-underline-offset: 2px; font-weight: 500; }
+.prose p, .prose li { color: #555555; font-family: 'Inter', sans-serif; line-height: 1.6; margin-bottom: 0.85rem; font-size: 0.85em; }
+.prose code { color: #111111; background: #fafafa; border: 1px solid #e5e5e5; padding: 0.15rem 0.35rem; border-radius: 4px; font-size: 0.85em; font-family: 'JetBrains Mono', monospace; }
+.prose pre { background: #fafafa; border: 1px solid #e5e5e5; border-radius: 6px; padding: 1rem; margin: 1rem 0; overflow-x: auto; }
+.prose pre code { color: #111111; background: transparent; border: 0; padding: 0; }
+.prose a { color: #111111; text-decoration: underline; text-underline-offset: 2px; font-weight: 500; }
 .prose a:hover { opacity: 0.7; }
-.prose strong { color: #ffffff; font-weight: 600; }
-.prose hr { border-color: #27272a; margin: 1.5rem 0; }
+.prose strong { color: #111111; font-weight: 600; }
+.prose hr { border-color: #e5e5e5; margin: 1.5rem 0; }
 .prose table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
-.prose table th, .prose table td { border: 1px solid #27272a; padding: 0.5rem 0.75rem; text-align: left; }
-.prose table th { background: #18181b; color: #ffffff; font-family: 'Space Grotesk', sans-serif; }
-.prose blockquote { border-left: 2px solid #ffffff; padding-left: 1rem; color: #a1a1aa; opacity: 0.9; margin: 1rem 0; italic: true; }
+.prose table th, .prose table td { border: 1px solid #e5e5e5; padding: 0.5rem 0.75rem; text-align: left; }
+.prose table th { background: #fafafa; color: #111111; font-family: 'Space Grotesk', sans-serif; }
+.prose blockquote { border-left: 2px solid #111111; padding-left: 1rem; color: #555555; opacity: 0.9; margin: 1rem 0; italic: true; }
 </style>

@@ -24,11 +24,11 @@ export default {
         foreground: '#e2e2f0',
         dim: '#8888a8',
         theme: {
-          bg: '#121212',
-          dark: '#ffffff',
-          muted: '#a1a1aa',
-          border: '#27272a',
-          'card-bg': '#1e1e1e',
+          bg: '#f5f5f3',
+          dark: '#111111',
+          muted: '#777777',
+          border: '#e2e2df',
+          'card-bg': '#ffffff',
         }
       },
       animation: {
