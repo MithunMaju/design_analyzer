@@ -1,10 +1,10 @@
 <template>
   <div
     v-if="isColor"
-    class="w-4 h-4 rounded border border-border/50 flex-shrink-0"
+    class="w-5 h-5 rounded-full border border-theme-border flex-shrink-0 shadow-sm"
     :style="{ background: value }"
   ></div>
-  <div v-else class="w-4 h-4 rounded bg-border/50 flex-shrink-0"></div>
+  <div v-else class="w-5 h-5 rounded-full bg-theme-border/60 border border-theme-border flex-shrink-0"></div>
 </template>
 
 <script setup lang="ts">

@@ -12,6 +12,7 @@ export default {
       fontFamily: {
         mono: ['"JetBrains Mono"', 'monospace'],
         sans: ['"Inter"', 'system-ui', 'sans-serif'],
+        display: ['"Space Grotesk"', '"Inter"', 'system-ui', 'sans-serif'],
       },
       colors: {
         surface: '#0a0a0f',
@@ -22,6 +23,13 @@ export default {
         muted: '#52526a',
         foreground: '#e2e2f0',
         dim: '#8888a8',
+        theme: {
+          bg: '#121212',
+          dark: '#ffffff',
+          muted: '#a1a1aa',
+          border: '#27272a',
+          'card-bg': '#1e1e1e',
+        }
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',

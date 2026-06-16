@@ -1,64 +1,82 @@
 <template>
-  <div class="max-w-4xl mx-auto px-6 py-16">
-    <!-- Hero -->
-    <div class="mb-14">
-      <p class="font-mono text-xs text-accent tracking-widest uppercase mb-4">Bundle-Extraction Pipeline</p>
-      <h1 class="text-4xl font-bold text-foreground leading-tight mb-4">
-        Reverse-engineer any site's<br />
-        <span class="text-accent">design system.</span>
-      </h1>
-      <p class="text-dim text-base max-w-lg">
-        Mechanical extraction from real CSS/JS bundles — actual hex codes, Tailwind tokens,
-        routes, libraries. No guessing, no hallucination.
-      </p>
-    </div>
-
-    <!-- Input -->
-    <div class="bg-panel border border-border rounded-xl p-6 mb-8">
-      <label class="block font-mono text-xs text-dim uppercase tracking-widest mb-3">Target URL</label>
-      <div class="flex gap-3">
-        <input
-          v-model="url"
-          type="url"
-          placeholder="https://linear.app"
-          class="flex-1 bg-surface border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted font-mono text-sm focus:outline-none focus:border-accent transition-colors"
-          @keydown.enter="analyze"
+  <div class="max-w-5xl mx-auto px-6 py-4">
+    <!-- Combined Hero and URL Input Container -->
+    <div id="deconstruct" class="relative w-full border border-white/10 bg-black rounded-2xl overflow-hidden mb-16 min-h-[380px] shadow-2xl">
+      <!-- Black background image -->
+      <div class="absolute inset-0 z-0 pointer-events-none">
+        <img
+          src="~/public/images/black_hero.jpg"
+          alt="Design Analyzer background"
+          class="h-full w-full object-cover"
         />
-        <button
-          @click="analyze"
-          :disabled="loading || !url"
-          class="px-6 py-3 bg-accent hover:bg-accent-dim disabled:opacity-40 disabled:cursor-not-allowed text-white font-mono text-sm rounded-lg transition-colors whitespace-nowrap"
-        >
-          {{ loading ? 'Analyzing...' : 'Analyze' }}
-        </button>
+      </div>
+
+      <!-- Left side (foreground details and input) -->
+      <div class="w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-between relative z-10 min-h-[380px]">
+        <div>
+          <span class="font-display text-[9px] text-neutral-400 uppercase tracking-widest font-semibold block mb-4">Pipeline Status: Online</span>
+          <h1 class="text-4xl md:text-5xl font-display font-bold text-white leading-tight mt-2 mb-6 uppercase tracking-wide">
+            design analyzer
+          </h1>
+          <p class="text-neutral-300 font-sans text-xs leading-relaxed max-w-md mb-8">
+            Deep bundle deconstruction extracts real custom properties, routes, and libraries from live website CSS/JS. Real data, no deceptions.
+          </p>
+        </div>
+        
+        <div class="w-full mt-4">
+          <span class="font-display text-[10px] text-white/90 font-bold uppercase tracking-widest block mb-2 font-semibold">Target URL to Analyze</span>
+          <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end w-full">
+            <input
+              v-model="url"
+              type="url"
+              placeholder="https://linear.app"
+              class="flex-1 h-12 bg-transparent border border-white rounded-lg px-4 text-white placeholder-neutral-500 font-mono text-sm focus:outline-none transition-colors"
+              @keydown.enter="analyze"
+            />
+            <button
+              @click="analyze"
+              :disabled="loading || !url"
+              class="px-8 h-12 bg-white hover:bg-neutral-200 disabled:opacity-60 text-black font-display font-bold text-xs uppercase tracking-widest shadow-[3px_3px_0px_#333] rounded-lg transition-all whitespace-nowrap"
+            >
+              {{ loading ? 'Analyzing...' : 'Deconstruct' }}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Progress / Status -->
-    <div v-if="loading" class="bg-panel border border-border rounded-xl p-6 mb-8">
+    <div v-if="loading" class="bg-black border border-white/10 rounded-2xl p-6 mb-16 shadow-2xl">
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
-        <span class="font-mono text-xs text-dim uppercase tracking-widest">{{ statusMsg }}</span>
+        <div class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></div>
+        <span class="font-display text-[10px] text-white uppercase tracking-widest font-bold">{{ statusMsg }}</span>
       </div>
-      <div class="w-full bg-surface rounded-full h-1">
+      <div class="w-full bg-neutral-800 h-1 rounded-full overflow-hidden">
         <div
-          class="bg-accent h-1 rounded-full transition-all duration-500"
+          class="bg-white h-1 transition-all duration-500"
           :style="{ width: `${progress}%` }"
         ></div>
       </div>
     </div>
 
     <!-- Error -->
-    <div v-if="error" class="bg-red-950/30 border border-red-800/50 rounded-xl p-5 mb-8">
-      <p class="font-mono text-xs text-red-400 uppercase tracking-widest mb-1">Error</p>
-      <p class="text-red-300 text-sm">{{ error }}</p>
+    <div v-if="error" class="bg-black border border-white/10 rounded-2xl p-6 mb-16 text-left shadow-2xl">
+      <p class="font-display text-[10px] text-neutral-400 uppercase tracking-widest font-bold mb-2">Extraction Error</p>
+      <p class="text-white font-mono text-xs">{{ error }}</p>
     </div>
 
-    <!-- Results -->
-    <div v-if="result" class="space-y-6">
-      <!-- Cached banner -->
-      <div v-if="result.cached" class="bg-accent/10 border border-accent/30 rounded-xl px-4 py-2">
-        <span class="font-mono text-xs text-accent">Served from cache — instant result, no re-crawl</span>
+    <!-- Signature Blend Row of Cards -->
+    <!-- Results section (The House Blend) -->
+    <div v-if="result" class="space-y-10 border-t border-theme-border pt-16 mb-20" id="results">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-8">
+        <div>
+          <span class="font-display text-[9px] text-theme-muted uppercase tracking-widest font-semibold block mb-2">Analysis Results</span>
+          <h2 class="font-display font-bold text-2xl uppercase tracking-wider text-theme-dark">The House Blend.</h2>
+        </div>
+        <!-- Cached badge -->
+        <div v-if="result.cached" class="mt-4 md:mt-0 font-mono text-[9px] text-theme-muted border border-theme-border px-3 py-1 uppercase tracking-wider">
+          Served from cache — instant load
+        </div>
       </div>
 
       <!-- Stats row -->
@@ -70,32 +88,32 @@
       </div>
 
       <!-- Screenshots -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div v-if="result.screenshot" class="bg-panel border border-border rounded-xl overflow-hidden">
-          <div class="px-4 py-3 border-b border-border">
-            <span class="font-mono text-xs text-dim uppercase tracking-widest">Desktop (1440px)</span>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div v-if="result.screenshot" class="bg-theme-card-bg border border-theme-border p-3 rounded-2xl overflow-hidden shadow-md">
+          <div class="px-3 py-2 border-b border-theme-border flex justify-between items-center">
+            <span class="font-display text-[9px] text-theme-muted uppercase tracking-wider font-semibold">Desktop (1440px)</span>
           </div>
           <img
             :src="`data:image/jpeg;base64,${result.screenshot}`"
             alt="Desktop screenshot"
-            class="w-full"
+            class="w-full mt-2 rounded-lg"
           />
         </div>
-        <div v-if="result.mobileScreenshot" class="bg-panel border border-border rounded-xl overflow-hidden">
-          <div class="px-4 py-3 border-b border-border">
-            <span class="font-mono text-xs text-dim uppercase tracking-widest">Mobile (390px)</span>
+        <div v-if="result.mobileScreenshot" class="bg-theme-card-bg border border-theme-border p-3 rounded-2xl overflow-hidden shadow-md text-white">
+          <div class="px-3 py-2 border-b border-theme-border flex justify-between items-center">
+            <span class="font-display text-[9px] text-theme-muted uppercase tracking-wider font-semibold">Mobile (390px)</span>
           </div>
           <img
             :src="`data:image/jpeg;base64,${result.mobileScreenshot}`"
             alt="Mobile screenshot"
-            class="w-full"
+            class="w-full mt-2 rounded-lg"
           />
         </div>
       </div>
 
-      <!-- Tabs -->
-      <div class="bg-panel border border-border rounded-xl">
-        <div class="flex border-b border-border overflow-x-auto">
+      <!-- Tab Details Card -->
+      <div class="border border-theme-border bg-theme-card-bg rounded-2xl overflow-hidden mt-12 shadow-md">
+        <div class="flex border-b border-theme-border bg-theme-card-bg overflow-x-auto">
           <TabBtn
             v-for="tab in tabs"
             :key="tab.id"
@@ -105,177 +123,159 @@
           />
         </div>
 
-        <div class="p-6">
-          <!-- Report tab -->
+        <div class="p-6 md:p-8">
+          <!-- Report Tab -->
           <div v-if="activeTab === 'report'">
-            <div v-if="reportLoading" class="flex items-center gap-3 py-8">
-              <div class="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
-              <span class="font-mono text-xs text-dim">Synthesizing report with Gemini...</span>
+            <div v-if="reportLoading" class="flex items-center gap-3 py-12 justify-center">
+              <div class="w-1.5 h-1.5 rounded-full bg-theme-dark animate-ping"></div>
+              <span class="font-display text-[10px] text-theme-muted uppercase tracking-widest font-semibold">Synthesizing design report...</span>
             </div>
             <div v-else-if="report">
-              <div class="flex justify-end gap-2 mb-4">
+              <div class="flex justify-end gap-2 mb-6">
                 <button
                   @click="copyReport"
-                  class="px-3 py-1.5 bg-surface border border-border hover:border-accent rounded-lg font-mono text-xs text-dim hover:text-foreground transition-colors"
+                  class="px-4 py-2 bg-white hover:bg-neutral-200 text-black font-display text-[9px] uppercase tracking-widest shadow-sm rounded-lg transition-colors"
                 >
                   {{ copied ? 'Copied!' : 'Copy Markdown' }}
                 </button>
                 <button
                   @click="downloadReport"
-                  class="px-3 py-1.5 bg-surface border border-border hover:border-accent rounded-lg font-mono text-xs text-dim hover:text-foreground transition-colors"
+                  class="px-4 py-2 border border-white/20 hover:bg-white/10 text-white font-display text-[9px] uppercase tracking-widest shadow-sm rounded-lg transition-colors"
                 >
                   Download .md
                 </button>
               </div>
               <div
-                class="prose prose-invert prose-sm max-w-none font-sans text-foreground"
+                class="prose prose-sm max-w-none text-theme-dark"
                 v-html="renderedReport"
               ></div>
             </div>
-            <div v-else class="text-center py-8">
+            <div v-else class="text-center py-12">
               <button
                 @click="generateReport"
-                class="px-6 py-3 bg-accent hover:bg-accent-dim text-white font-mono text-sm rounded-lg transition-colors"
+                class="px-8 py-3 bg-white hover:bg-neutral-200 text-black font-display text-[10px] uppercase tracking-widest shadow-sm rounded-lg transition-colors"
               >
-               Generate Report with Gemini
+                Generate Report with Gemini
               </button>
-              <p class="text-dim text-xs mt-3">Uses Gemini API — free tier</p>
-              <p v-if="reportError" class="text-red-400 font-mono text-xs mt-3">{{ reportError }}</p>
+              <p class="text-theme-muted text-[10px] mt-3 uppercase font-mono tracking-wider">Uses Gemini API — free tier</p>
+              <p v-if="reportError" class="text-red-600 font-mono text-xs mt-3">{{ reportError }}</p>
             </div>
           </div>
 
           <!-- Custom Properties tab -->
-          <div v-if="activeTab === 'tokens'" class="space-y-2">
-            <p class="font-mono text-xs text-dim uppercase tracking-widest mb-4">
-              {{ result.curated.customProperties.length }} CSS custom properties
+          <div v-if="activeTab === 'tokens'" class="space-y-3">
+            <p class="font-display text-[10px] text-theme-muted uppercase tracking-widest mb-4 border-b border-theme-border pb-2">
+              {{ result.curated.customProperties.length }} custom variables extracted
             </p>
-            <div
-              v-for="prop in result.curated.customProperties"
-              :key="prop.name"
-              class="flex items-center gap-3 py-2 border-b border-border/50 last:border-0"
-            >
-              <ColorSwatch :value="prop.value" />
-              <span class="font-mono text-xs text-accent">{{ prop.name }}</span>
-              <span class="font-mono text-xs text-dim ml-auto">{{ prop.value }}</span>
-              <span class="font-mono text-[10px] text-muted">{{ prop.source }}</span>
+            <div class="divide-y divide-theme-border">
+              <div
+                v-for="prop in result.curated.customProperties"
+                :key="prop.name"
+                class="flex items-center gap-3 py-3 px-1"
+              >
+                <ColorSwatch :value="prop.value" />
+                <span class="font-mono text-xs text-theme-dark font-medium">{{ prop.name }}</span>
+                <span class="font-mono text-xs text-theme-muted ml-auto">{{ prop.value }}</span>
+                <span class="font-mono text-[9px] text-theme-muted/60 pl-2 uppercase tracking-wider">{{ prop.source }}</span>
+              </div>
             </div>
-            <p v-if="!result.curated.customProperties.length" class="text-dim text-sm">No custom properties detected</p>
+            <p v-if="!result.curated.customProperties.length" class="text-theme-muted text-xs font-mono">No custom properties detected</p>
           </div>
 
           <!-- Libraries tab -->
-          <div v-if="activeTab === 'libraries'" class="space-y-3">
-            <p class="font-mono text-xs text-dim uppercase tracking-widest mb-4">
-              Detected via runtime globals, script versions, and bundle strings
+          <div v-if="activeTab === 'libraries'" class="space-y-6">
+            <p class="font-display text-[10px] text-theme-muted uppercase tracking-widest mb-4 border-b border-theme-border pb-2">
+              Libraries & dependencies detected
             </p>
+            
             <div v-if="result.curated.detectedLibraries?.domConfirmed?.length" class="mb-4">
-              <p class="font-mono text-xs text-dim uppercase tracking-widest mb-2">Confirmed (runtime)</p>
+              <p class="font-display text-[10px] text-theme-muted uppercase tracking-widest mb-2">Confirmed (Runtime DOM Globals)</p>
               <div class="flex flex-wrap gap-2">
-                <span v-for="lib in result.curated.detectedLibraries.domConfirmed" :key="lib" class="px-3 py-1.5 bg-surface border border-accent/30 rounded-lg font-mono text-xs text-accent">{{ lib }}</span>
+                <span v-for="lib in result.curated.detectedLibraries.domConfirmed" :key="lib" class="px-3 py-1 bg-neutral-800 text-neutral-200 font-mono text-xs rounded-md">{{ lib }}</span>
               </div>
             </div>
+
             <div v-if="result.curated.detectedLibraries?.scriptConfirmed?.length" class="mb-4">
-              <p class="font-mono text-xs text-dim uppercase tracking-widest mb-2">Confirmed (script filenames)</p>
+              <p class="font-display text-[10px] text-theme-muted uppercase tracking-widest mb-2">Confirmed (Script Filenames)</p>
               <div class="flex flex-wrap gap-2">
-                <span v-for="lib in result.curated.detectedLibraries.scriptConfirmed" :key="lib" class="px-3 py-1.5 bg-surface border border-border rounded-lg font-mono text-xs text-foreground">{{ lib }}</span>
+                <span v-for="lib in result.curated.detectedLibraries.scriptConfirmed" :key="lib" class="px-3 py-1 bg-theme-bg border border-theme-border text-theme-dark font-mono text-xs">{{ lib }}</span>
               </div>
             </div>
+
             <div v-if="result.curated.detectedLibraries?.bundleHints?.length">
-              <p class="font-mono text-xs text-dim uppercase tracking-widest mb-2">Bundle hints (unconfirmed)</p>
+              <p class="font-display text-[10px] text-theme-muted uppercase tracking-widest mb-2">Bundle hints (unconfirmed)</p>
               <div class="flex flex-wrap gap-2">
-                <span v-for="lib in result.curated.detectedLibraries.bundleHints" :key="lib" class="px-3 py-1.5 bg-surface border border-border/50 rounded-lg font-mono text-xs text-muted">{{ lib }}</span>
+                <span v-for="lib in result.curated.detectedLibraries.bundleHints" :key="lib" class="px-3 py-1 bg-theme-bg border border-theme-border/60 text-theme-muted font-mono text-xs">{{ lib }}</span>
               </div>
             </div>
+
             <div v-if="result.curated.fonts.length" class="mt-6">
-              <p class="font-mono text-xs text-dim uppercase tracking-widest mb-3">Google Fonts (imported)</p>
+              <p class="font-display text-[10px] text-theme-muted uppercase tracking-widest mb-3">Google Fonts</p>
               <div class="flex flex-wrap gap-2">
                 <span
                   v-for="font in result.curated.fonts"
                   :key="font"
-                  class="px-3 py-1.5 bg-surface border border-accent/30 rounded-lg font-mono text-xs text-accent"
+                  class="px-3 py-1 bg-theme-bg border border-theme-border text-theme-dark font-mono text-xs rounded-md"
                 >
                   {{ font }}
                 </span>
               </div>
             </div>
-            <div v-if="result.curated.domEvidence" class="mt-6">
-              <p class="font-mono text-xs text-dim uppercase tracking-widest mb-3">Computed Fonts (rendered)</p>
-              <div class="space-y-1 font-mono text-xs">
-                <p class="text-foreground">body: <span class="text-accent">{{ result.curated.domEvidence.desktop.bodyFont }}</span></p>
-                <p class="text-foreground">h1: <span class="text-accent">{{ result.curated.domEvidence.desktop.h1Font }}</span></p>
-              </div>
-            </div>
           </div>
 
           <!-- Routes tab -->
-          <div v-if="activeTab === 'routes'" class="space-y-2">
-            <p class="font-mono text-xs text-dim uppercase tracking-widest mb-4">
-              Extracted route / path patterns from bundle text
+          <div v-if="activeTab === 'routes'" class="space-y-6">
+            <p class="font-display text-[10px] text-theme-muted uppercase tracking-widest mb-4 border-b border-theme-border pb-2">
+              Route paths & api bindings
             </p>
-            <div
-              v-for="route in result.curated.routes"
-              :key="route"
-              class="py-2 border-b border-border/50 last:border-0"
-            >
-              <span class="font-mono text-xs text-foreground">{{ route }}</span>
-            </div>
-            <p v-if="!result.curated.routes.length" class="text-dim text-sm">No routes extracted</p>
-
-            <div v-if="result.curated.apiEndpoints.length" class="mt-6">
-              <p class="font-mono text-xs text-dim uppercase tracking-widest mb-3">API Endpoints</p>
-              <div
-                v-for="ep in result.curated.apiEndpoints"
-                :key="ep"
-                class="py-2 border-b border-border/50 last:border-0"
-              >
-                <span class="font-mono text-xs text-accent break-all">{{ ep }}</span>
-              </div>
-            </div>
-
-            <div v-if="result.curated.domEvidence?.desktop?.navLinks?.length" class="mt-6">
-              <p class="font-mono text-xs text-dim uppercase tracking-widest mb-3">Navigation Links (rendered)</p>
-              <div class="flex flex-wrap gap-2">
-                <span
-                  v-for="link in result.curated.domEvidence.desktop.navLinks"
-                  :key="link"
-                  class="px-2 py-1 bg-surface border border-border rounded font-mono text-xs text-foreground"
+            
+            <div class="bg-theme-bg border border-theme-border p-4">
+              <p class="font-display text-[10px] text-theme-dark uppercase tracking-widest mb-3 font-semibold">Application Routes</p>
+              <div class="max-h-60 overflow-y-auto divide-y divide-theme-border pr-2">
+                <div
+                  v-for="route in result.curated.routes"
+                  :key="route"
+                  class="py-2 font-mono text-xs text-theme-dark"
                 >
-                  {{ link }}
-                </span>
+                  {{ route }}
+                </div>
               </div>
+              <p v-if="!result.curated.routes.length" class="text-theme-muted text-xs font-mono">No routes extracted</p>
             </div>
 
-            <div v-if="result.curated.domEvidence?.desktop?.filterItems?.length" class="mt-6">
-              <p class="font-mono text-xs text-dim uppercase tracking-widest mb-3">Filter Items (rendered)</p>
-              <div class="flex flex-wrap gap-2">
-                <span
-                  v-for="item in result.curated.domEvidence.desktop.filterItems"
-                  :key="item"
-                  class="px-2 py-1 bg-surface border border-border rounded font-mono text-xs text-foreground"
+            <div v-if="result.curated.apiEndpoints.length" class="bg-theme-bg border border-theme-border p-4">
+              <p class="font-display text-[10px] text-theme-dark uppercase tracking-widest mb-3 font-semibold">API Endpoints</p>
+              <div class="max-h-60 overflow-y-auto divide-y divide-theme-border pr-2">
+                <div
+                  v-for="ep in result.curated.apiEndpoints"
+                  :key="ep"
+                  class="py-2 font-mono text-xs text-theme-dark break-all"
                 >
-                  {{ item }}
-                </span>
+                  {{ ep }}
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Tailwind tab -->
           <div v-if="activeTab === 'tailwind'" class="space-y-6">
-            <div v-if="result.curated.tailwindVersion" class="inline-flex items-center gap-2 px-3 py-1.5 bg-accent/10 border border-accent/30 rounded-lg">
-              <span class="font-mono text-xs text-accent">{{ result.curated.tailwindVersion }}</span>
+            <div v-if="result.curated.tailwindVersion" class="inline-flex items-center px-3 py-1 bg-neutral-800 text-neutral-200 text-xs font-mono rounded-md">
+              {{ result.curated.tailwindVersion }}
             </div>
-            <p v-else class="text-dim text-sm">No Tailwind version detected</p>
+            <p v-else class="text-theme-muted text-xs font-mono">No Tailwind framework detected</p>
 
             <div
               v-for="(values, bucket) in result.curated.tailwindArbitraryValues"
               :key="bucket"
+              class="border border-theme-border p-4"
             >
               <div v-if="values.length">
-                <p class="font-mono text-xs text-dim uppercase tracking-widest mb-3">{{ bucket }}</p>
-                <div class="flex flex-wrap gap-2 mb-4">
+                <p class="font-display text-[10px] text-theme-dark uppercase tracking-widest mb-2 font-semibold">{{ bucket }}</p>
+                <div class="flex flex-wrap gap-2">
                   <span
                     v-for="val in values"
                     :key="val"
-                    class="px-2 py-1 bg-surface border border-border rounded font-mono text-xs text-foreground"
+                    class="px-2.5 py-1 bg-theme-card-bg border border-theme-border text-theme-dark font-mono text-xs"
                   >
                     {{ val }}
                   </span>
@@ -283,44 +283,32 @@
               </div>
             </div>
 
-            <!-- Fallback: real rendered colors when Tailwind arbitrary colors are empty -->
-            <div v-if="!result.curated.tailwindArbitraryValues.colors?.length && result.curated.domEvidence?.desktop?.colorSamples?.length">
-              <p class="font-mono text-xs text-dim uppercase tracking-widest mb-3">Computed Colors (rendered, since no Tailwind arbitrary colors found)</p>
-              <div class="space-y-2">
+            <!-- Fallbacks -->
+            <div v-if="!result.curated.tailwindArbitraryValues.colors?.length && result.curated.domEvidence?.desktop?.colorSamples?.length" class="border border-theme-border p-4">
+              <p class="font-display text-[10px] text-theme-dark uppercase tracking-widest mb-3 font-semibold">Rendered Color Samples</p>
+              <div class="flex flex-wrap gap-4">
                 <div
                   v-for="color in result.curated.domEvidence.desktop.colorSamples"
                   :key="color"
-                  class="flex items-center gap-3 py-1"
+                  class="flex items-center gap-2 px-2 py-1 bg-theme-card-bg border border-theme-border"
                 >
-                  <div class="w-6 h-6 rounded border border-border" :style="{ background: color }"></div>
-                  <span class="font-mono text-xs text-foreground">{{ color }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Fallback: hex colors from raw CSS -->
-            <div v-if="result.curated.domEvidence?.cssEvidence?.colors?.length" class="mt-6">
-              <p class="font-mono text-xs text-dim uppercase tracking-widest mb-3">Hex Colors (from CSS)</p>
-              <div class="flex flex-wrap gap-2">
-                <div
-                  v-for="color in result.curated.domEvidence.cssEvidence.colors"
-                  :key="color"
-                  class="flex items-center gap-2 px-2 py-1 bg-surface border border-border rounded"
-                >
-                  <div class="w-4 h-4 rounded border border-border" :style="{ background: color }"></div>
-                  <span class="font-mono text-xs text-foreground">{{ color }}</span>
+                  <div class="w-5 h-5 border border-theme-border" :style="{ background: color }"></div>
+                  <span class="font-mono text-xs text-theme-dark">{{ color }}</span>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Raw JSON tab -->
-          <div v-if="activeTab === 'raw'">
-            <pre class="text-xs font-mono text-dim overflow-auto max-h-[600px] whitespace-pre-wrap">{{ JSON.stringify(result.curated, null, 2) }}</pre>
+          <div v-if="activeTab === 'raw'" class="bg-theme-card-bg p-4 border border-theme-border overflow-hidden">
+            <pre class="text-xs font-mono text-theme-muted overflow-auto max-h-[600px] whitespace-pre-wrap pr-2">{{ JSON.stringify(result.curated, null, 2) }}</pre>
           </div>
         </div>
       </div>
     </div>
+
+
+
   </div>
 </template>
 
@@ -460,15 +448,22 @@ function downloadReport() {
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Satisfy&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-.prose h1, .prose h2, .prose h3 { color: #e2e2f0; }
-.prose p, .prose li { color: #8888a8; }
-.prose code { color: #6366f1; background: #111118; padding: 0.15rem 0.35rem; border-radius: 4px; font-size: 0.8em; }
-.prose pre { background: #111118; border: 1px solid #1e1e2e; border-radius: 8px; }
-.prose a { color: #6366f1; }
-.prose strong { color: #e2e2f0; }
-.prose hr { border-color: #1e1e2e; }
-.prose table th, .prose table td { border-color: #1e1e2e; }
-.prose blockquote { border-left-color: #6366f1; color: #8888a8; }
+.prose h1, .prose h2, .prose h3 { color: #ffffff; font-family: 'Space Grotesk', sans-serif; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.75rem; text-transform: uppercase; tracking-wide: true; }
+.prose h1 { font-size: 1.3rem; }
+.prose h2 { font-size: 1.15rem; }
+.prose h3 { font-size: 1.05rem; }
+.prose p, .prose li { color: #a1a1aa; font-family: 'Inter', sans-serif; line-height: 1.6; margin-bottom: 0.85rem; font-size: 0.85em; }
+.prose code { color: #ffffff; background: #27272a; border: 1px solid #3f3f46; padding: 0.15rem 0.35rem; border-radius: 4px; font-size: 0.85em; font-family: 'JetBrains Mono', monospace; }
+.prose pre { background: #18181b; border: 1px solid #27272a; border-radius: 6px; padding: 1rem; margin: 1rem 0; overflow-x: auto; }
+.prose pre code { color: #ffffff; background: transparent; border: 0; padding: 0; }
+.prose a { color: #ffffff; text-decoration: underline; text-underline-offset: 2px; font-weight: 500; }
+.prose a:hover { opacity: 0.7; }
+.prose strong { color: #ffffff; font-weight: 600; }
+.prose hr { border-color: #27272a; margin: 1.5rem 0; }
+.prose table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+.prose table th, .prose table td { border: 1px solid #27272a; padding: 0.5rem 0.75rem; text-align: left; }
+.prose table th { background: #18181b; color: #ffffff; font-family: 'Space Grotesk', sans-serif; }
+.prose blockquote { border-left: 2px solid #ffffff; padding-left: 1rem; color: #a1a1aa; opacity: 0.9; margin: 1rem 0; italic: true; }
 </style>
