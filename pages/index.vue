@@ -110,7 +110,7 @@
           <div v-if="activeTab === 'report'">
             <div v-if="reportLoading" class="flex items-center gap-3 py-8">
               <div class="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
-              <span class="font-mono text-xs text-dim">Synthesizing report with Groq...</span>
+              <span class="font-mono text-xs text-dim">Synthesizing report with Gemini...</span>
             </div>
             <div v-else-if="report">
               <div class="flex justify-end gap-2 mb-4">
@@ -137,9 +137,9 @@
                 @click="generateReport"
                 class="px-6 py-3 bg-accent hover:bg-accent-dim text-white font-mono text-sm rounded-lg transition-colors"
               >
-               Generate Report with Groq
+               Generate Report with Gemini
               </button>
-              <p class="text-dim text-xs mt-3">Uses Groq API — free tier</p>
+              <p class="text-dim text-xs mt-3">Uses Gemini API — free tier</p>
               <p v-if="reportError" class="text-red-400 font-mono text-xs mt-3">{{ reportError }}</p>
             </div>
           </div>
