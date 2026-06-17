@@ -216,7 +216,7 @@ export default defineEventHandler(async (event) => {
       // Apply basic stealth to hide webdriver flags and match platform
       await desktopPage.evaluateOnNewDocument(() => {
         Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-        Object.defineProperty(navigator, 'platform', { get: () => 'Win32' });
+        Object.defineProperty(navigator, 'platform', { get: () => 'Linux x86_64' });
         Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
         Object.defineProperty(navigator, 'deviceMemory', { get: () => 8 });
         Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 8 });
@@ -224,7 +224,7 @@ export default defineEventHandler(async (event) => {
       });
 
       await desktopPage.setViewport({ width: 1440, height: 1000, deviceScaleFactor: 1 });
-      const desktopUa = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+      const desktopUa = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
       await desktopPage.setUserAgent(desktopUa);
 
       // Listen for stylesheet/script network responses on desktop run
