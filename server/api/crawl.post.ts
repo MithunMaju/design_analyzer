@@ -212,6 +212,14 @@ export default defineEventHandler(async (event) => {
     try {
       // 1. Desktop Crawl & Screenshot
       const desktopPage = await browser.newPage();
+
+      // Apply basic stealth to hide webdriver flags
+      await desktopPage.evaluateOnNewDocument(() => {
+        Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+        Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+        Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+      });
+
       await desktopPage.setViewport({ width: 1440, height: 1000, deviceScaleFactor: 1 });
       const desktopUa = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
       await desktopPage.setUserAgent(desktopUa);
@@ -310,6 +318,14 @@ export default defineEventHandler(async (event) => {
 
       // 2. Mobile Crawl & Screenshot
       const mobilePage = await browser.newPage();
+
+      // Apply basic stealth to hide webdriver flags
+      await mobilePage.evaluateOnNewDocument(() => {
+        Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+        Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+        Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+      });
+
       await mobilePage.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 });
       const mobileUa = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36";
       await mobilePage.setUserAgent(mobileUa);
