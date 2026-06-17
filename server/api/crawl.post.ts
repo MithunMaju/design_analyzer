@@ -213,10 +213,13 @@ export default defineEventHandler(async (event) => {
       // 1. Desktop Crawl & Screenshot
       const desktopPage = await browser.newPage();
 
-      // Apply basic stealth to hide webdriver flags
+      // Apply basic stealth to hide webdriver flags and match platform
       await desktopPage.evaluateOnNewDocument(() => {
         Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+        Object.defineProperty(navigator, 'platform', { get: () => 'Win32' });
         Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+        Object.defineProperty(navigator, 'deviceMemory', { get: () => 8 });
+        Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 8 });
         Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
       });
 
@@ -319,10 +322,13 @@ export default defineEventHandler(async (event) => {
       // 2. Mobile Crawl & Screenshot
       const mobilePage = await browser.newPage();
 
-      // Apply basic stealth to hide webdriver flags
+      // Apply basic stealth to hide webdriver flags and match platform
       await mobilePage.evaluateOnNewDocument(() => {
         Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+        Object.defineProperty(navigator, 'platform', { get: () => 'Linux armv8l' });
         Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+        Object.defineProperty(navigator, 'deviceMemory', { get: () => 4 });
+        Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 4 });
         Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
       });
 
