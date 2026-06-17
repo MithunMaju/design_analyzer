@@ -46,8 +46,52 @@ export default defineEventHandler(async (event) => {
       '  await page.setUserAgent(ua);',
       '  await page.setViewport({ width: context.w, height: context.h, deviceScaleFactor: 1 });',
       '  await page.goto(context.url, { waitUntil: "networkidle2", timeout: 30000 }).catch(() => {});',
+      '  ',
+      '  // Bypass Amazon soft captcha page if present',
+      '  try {',
+      '    const captchaForm = await page.$("form[action*=\'/errors/validateCaptcha\'], form[action*=\'/captcha\']");',
+      '    if (captchaForm) {',
+      '      const submitBtn = await captchaForm.$("button, input[type=\'submit\']");',
+      '      if (submitBtn) {',
+      '        await Promise.all([',
+      '          submitBtn.click(),',
+      '          page.waitForNavigation({ waitUntil: "networkidle2", timeout: 10000 }).catch(() => {})',
+      '        ]);',
+      '      }',
+      '    }',
+      '  } catch (e) {}',
+      '  ',
+      '  // Dismiss standard overlays/modals using Escape key',
+      '  try {',
+      '    await new Promise(r => setTimeout(r, 1000));',
+      '    await page.keyboard.press("Escape");',
+      '    await new Promise(r => setTimeout(r, 500));',
+      '  } catch (e) {}',
+      '  ',
       '  // Scroll to trigger lazy loading and reveal animations',
       '  await page.evaluate(async () => {',
+      '    // Dismiss/hide common login and guest modal overlays and unlock scroll lock',
+      '    try {',
+      '      const overlaySelectors = [',
+      '        "div[class*=\'login-modal\']", "div[id*=\'login-modal\']",',
+      '        "div[class*=\'signup-modal\']", "div[id*=\'signup-modal\']",',
+      '        "div[role=\'dialog\']", "div[class*=\'overlay\']",',
+      '        "div[class*=\'popup\']", "div[class*=\'modal-backdrop\']",',
+      '        "div[class*=\'modal-wrapper\']", "div[class*=\'Modal-root\']"',
+      '      ];',
+      '      for (const sel of overlaySelectors) {',
+      '        document.querySelectorAll(sel).forEach(el => {',
+      '          if (el.tagName !== "BODY" && el.tagName !== "HTML" && el.tagName !== "MAIN") {',
+      '            el.style.setProperty("display", "none", "important");',
+      '          }',
+      '        });',
+      '      }',
+      '      document.body.style.setProperty("overflow", "auto", "important");',
+      '      document.body.style.setProperty("position", "static", "important");',
+      '      document.documentElement.style.setProperty("overflow", "auto", "important");',
+      '    } catch (e) {}',
+      '    ',
+      '    // Perform scrolling',
       '    const delay = ms => new Promise(r => setTimeout(r, ms));',
       '    const scrollHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);',
       '    const step = Math.floor(window.innerHeight * 0.6);',
@@ -56,6 +100,7 @@ export default defineEventHandler(async (event) => {
       '      await delay(150);',
       '    }',
       '    window.scrollTo(0, 0);',
+      '    await delay(300);',
       '  });',
       '  const shot = await page.screenshot({ type: "jpeg", quality: 75, fullPage: true, encoding: "base64" });',
       '  return { data: shot, type: "application/json" };',
@@ -100,11 +145,53 @@ export default defineEventHandler(async (event) => {
         } catch {}
       });
 
-      await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await new Promise(r => setTimeout(r, 2500));
+      await page.goto(targetUrl, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
+      
+      // Bypass Amazon soft captcha page if present
+      try {
+        const captchaForm = await page.$("form[action*='/errors/validateCaptcha'], form[action*='/captcha']");
+        if (captchaForm) {
+          const submitBtn = await captchaForm.$("button, input[type='submit']");
+          if (submitBtn) {
+            await Promise.all([
+              submitBtn.click(),
+              page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {})
+            ]);
+          }
+        }
+      } catch (e) {}
+
+      // Dismiss standard overlays/modals using Escape key
+      try {
+        await new Promise(r => setTimeout(r, 1000));
+        await page.keyboard.press('Escape');
+        await new Promise(r => setTimeout(r, 500));
+      } catch (e) {}
 
       // Scroll to trigger reveal animations
       await page.evaluate(async () => {
+        // Dismiss/hide common login and guest modal overlays and unlock scroll lock
+        try {
+          const overlaySelectors = [
+            "div[class*='login-modal']", "div[id*='login-modal']",
+            "div[class*='signup-modal']", "div[id*='signup-modal']",
+            "div[role='dialog']", "div[class*='overlay']",
+            "div[class*='popup']", "div[class*='modal-backdrop']",
+            "div[class*='modal-wrapper']", "div[class*='Modal-root']"
+          ];
+          for (const sel of overlaySelectors) {
+            document.querySelectorAll(sel).forEach(el => {
+              if (el.tagName !== "BODY" && el.tagName !== "HTML" && el.tagName !== "MAIN") {
+                el.style.setProperty("display", "none", "important");
+              }
+            });
+          }
+          document.body.style.setProperty("overflow", "auto", "important");
+          document.body.style.setProperty("position", "static", "important");
+          document.documentElement.style.setProperty("overflow", "auto", "important");
+        } catch (e) {}
+
+        // Perform scrolling
         const delay = ms => new Promise(r => setTimeout(r, ms));
         const totalHeight = document.body.scrollHeight;
         const step = Math.floor(window.innerHeight * 0.8);
