@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
   // ─── Helper: call Browserless /function endpoint ──────────────────────────
   // This sends a script to run inside a real Chromium browser on Browserless servers.
   async function runInBrowser(script: string, options: Record<string, unknown> = {}) {
-    const res = await fetch(`${BROWSERLESS_BASE}/function?token=${apiKey}`, {
+    const res = await fetch(`${BROWSERLESS_BASE}/function?token=${apiKey}&stealth=true`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
@@ -42,7 +42,7 @@ export default defineEventHandler(async (event) => {
   async function takeScreenshot(w: number, h: number): Promise<string> {
     const code = [
       'export default async ({ page, context }) => {',
-      '  const ua = context.w < 600 ? "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";',
+      '  const ua = context.w < 600 ? "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";',
       '  await page.setUserAgent(ua);',
       '  await page.setViewport({ width: context.w, height: context.h, deviceScaleFactor: 1 });',
       '  await page.goto(context.url, { waitUntil: "networkidle2", timeout: 30000 }).catch(() => {});',
@@ -61,7 +61,7 @@ export default defineEventHandler(async (event) => {
       '  return { data: shot, type: "application/json" };',
       '};',
     ].join("\n");
-    const res = await fetch(`${BROWSERLESS_BASE}/function?token=${apiKey}&--width=${w}&--height=${h}`, {
+    const res = await fetch(`${BROWSERLESS_BASE}/function?token=${apiKey}&stealth=true&--width=${w}&--height=${h}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ code, context: { url: targetUrl, w, h } }),
@@ -81,7 +81,10 @@ export default defineEventHandler(async (event) => {
     export default async ({ page, context }) => {
       const { targetUrl, width, height } = context;
       await page.setViewport({ width, height, deviceScaleFactor: 1 });
-      await page.setUserAgent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36');
+      const ua = width < 600
+        ? 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
+        : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+      await page.setUserAgent(ua);
 
       const cssTexts = [];
       const cssUrls = [];
