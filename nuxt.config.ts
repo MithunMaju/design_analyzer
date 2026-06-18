@@ -10,5 +10,17 @@ export default defineNuxtConfig({
   },
   nitro: {
     preset: 'cloudflare-pages',
+    storage: {
+      reports: {
+        driver: 'cloudflareKVBinding',
+        binding: 'REPORTS_KV',
+      },
+    },
+    devStorage: {
+      reports: {
+        driver: 'fs',
+        base: './.nitro/data/reports',
+      },
+    },
   },
 });

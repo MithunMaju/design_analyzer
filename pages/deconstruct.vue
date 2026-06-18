@@ -85,7 +85,7 @@
             Served from cache — instant load
           </div>
           <div v-else-if="loadedFromLocalHistory" class="mt-4 md:mt-0 font-mono text-[9px] text-theme-muted border border-theme-border px-3 py-1 uppercase tracking-wider">
-            Loaded from local history — offline
+            Loaded from shared cache — instant load
           </div>
         </div>
       </div>
@@ -393,51 +393,49 @@ const renderedReport = computed(() => {
 });
 
 // Load parameters or check cache history
-onMounted(() => {
+onMounted(async () => {
   const queryUrl = useRoute().query.url as string;
   if (queryUrl) {
     url.value = queryUrl;
+    loading.value = true;
     try {
-      const historyJson = localStorage.getItem('crawl_history') || '[]';
-      const history = JSON.parse(historyJson);
-      const matched = history.find((item: any) => item.url === queryUrl);
-      if (matched && matched.result && matched.report) {
-        result.value = matched.result;
-        report.value = matched.report;
+      const detail = await $fetch<any>(`/api/report-detail?url=${encodeURIComponent(queryUrl)}`);
+      if (detail && detail.result && detail.report) {
+        result.value = detail.result;
+        report.value = detail.report;
         loadedFromLocalHistory.value = true;
-        console.log('Loaded from local history cache instantly!');
+        console.log('Loaded from shared database cache instantly!');
       }
     } catch (e) {
-      console.warn('Failed to load local history from localStorage:', e);
+      console.warn('Failed to load from shared database cache:', e);
+    } finally {
+      loading.value = false;
     }
   }
 });
 
-function saveToHistory() {
+async function saveToHistory() {
   if (!result.value || !report.value) return;
   try {
-    const historyJson = localStorage.getItem('crawl_history') || '[]';
-    const history = JSON.parse(historyJson);
     const domain = new URL(result.value.curated.meta.url).hostname;
     const urlVal = result.value.curated.meta.url;
     const titleVal = result.value.curated.meta.title || domain;
 
-    // Remove duplicates
-    const filtered = history.filter((item: any) => item.url !== urlVal);
-    filtered.unshift({
-      url: urlVal,
-      title: titleVal,
-      domain,
-      date: new Date().toLocaleDateString(),
-      report: report.value,
-      result: result.value // Save result for instant offline reloading
+    await $fetch('/api/history', {
+      method: 'POST',
+      body: {
+        url: urlVal,
+        title: titleVal,
+        domain,
+        date: new Date().toLocaleDateString(),
+        report: report.value,
+        result: result.value
+      }
     });
 
-    // Save only the top 30 history items to prevent hitting localStorage size limits
-    localStorage.setItem('crawl_history', JSON.stringify(filtered.slice(0, 30)));
     loadedFromLocalHistory.value = false;
   } catch (e) {
-    console.error('Failed to save to history:', e);
+    console.error('Failed to save to database history:', e);
   }
 }
 

@@ -42,7 +42,7 @@
           <h2 class="font-display font-bold text-2xl uppercase tracking-wider text-theme-dark">Deconstruction History</h2>
         </div>
         
-        <!-- Search and Action Controls -->
+        <!-- Search Controls -->
         <div v-if="history.length" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <input
             v-model="searchQuery"
@@ -50,17 +50,17 @@
             placeholder="Search history..."
             class="px-4 py-2 bg-theme-card-bg border border-theme-border rounded-lg text-theme-dark placeholder-theme-muted/60 font-mono text-xs focus:outline-none focus:border-theme-dark/40 transition-colors w-full sm:w-64"
           />
-          <button
-            @click="clearHistory"
-            class="px-4 py-2 border border-red-200 hover:border-red-500 hover:bg-red-50 text-red-500 font-display text-[10px] uppercase tracking-widest transition-all whitespace-nowrap rounded-lg"
-          >
-            Clear All
-          </button>
         </div>
       </div>
 
+      <!-- Loading State -->
+      <div v-if="loading" class="text-center py-12">
+        <div class="inline-block w-6 h-6 border-2 border-theme-dark border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-xs text-theme-muted mt-2 font-mono">Loading shared history...</p>
+      </div>
+
       <!-- Empty State -->
-      <div v-if="filteredHistory.length === 0" class="bg-theme-card-bg border border-theme-border rounded-2xl p-12 text-center shadow-sm">
+      <div v-else-if="filteredHistory.length === 0" class="bg-theme-card-bg border border-theme-border rounded-2xl p-12 text-center shadow-sm">
         <div class="w-12 h-12 rounded-full bg-theme-bg flex items-center justify-center mx-auto mb-4 border border-theme-border">
           <svg class="w-6 h-6 text-theme-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -68,7 +68,7 @@
         </div>
         <h3 class="font-display text-sm text-theme-dark uppercase font-bold tracking-wider mb-2">No Deconstructed Sites</h3>
         <p class="text-xs text-theme-muted max-w-md mx-auto leading-relaxed mb-6">
-          {{ searchQuery ? 'No search results match your query. Try searching for a different domain or title.' : 'Analyze a website to deconstruct its bundles and generate design reports. Your history will be stored here in localStorage.' }}
+          {{ searchQuery ? 'No search results match your query. Try searching for a different domain or title.' : 'Analyze a website to deconstruct its bundles and generate design reports. Reports are stored in a shared global repository.' }}
         </p>
         <NuxtLink
           to="/deconstruct"
@@ -152,17 +152,20 @@
 <script setup lang="ts">
 const searchQuery = ref('');
 const history = ref<any[]>([]);
+const loading = ref(false);
 
 onMounted(() => {
   loadHistory();
 });
 
-function loadHistory() {
+async function loadHistory() {
+  loading.value = true;
   try {
-    const historyJson = localStorage.getItem('crawl_history') || '[]';
-    history.value = JSON.parse(historyJson);
+    history.value = await $fetch('/api/history');
   } catch (e) {
-    console.warn('Failed to load crawl history from localStorage:', e);
+    console.warn('Failed to load crawl history:', e);
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -182,38 +185,36 @@ function getLibraryCount(item: any) {
   return (d.domConfirmed?.length || 0) + (d.scriptConfirmed?.length || 0) + (d.bundleHints?.length || 0);
 }
 
-function downloadReport(item: any) {
-  if (!item.report) return;
-  const slug = (item.title || 'report')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-  const blob = new Blob([item.report], { type: 'text/markdown' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = `${slug || 'design-report'}.md`;
-  link.click();
-  URL.revokeObjectURL(link.href);
-}
-
-function deleteItem(url: string) {
+async function downloadReport(item: any) {
   try {
-    const updated = history.value.filter((item: any) => item.url !== url);
-    localStorage.setItem('crawl_history', JSON.stringify(updated));
-    history.value = updated;
+    const detail = await $fetch<any>(`/api/report-detail?url=${encodeURIComponent(item.url)}`);
+    if (!detail?.report) return;
+    
+    const slug = (item.title || 'report')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+    const blob = new Blob([detail.report], { type: 'text/markdown' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${slug || 'design-report'}.md`;
+    link.click();
+    URL.revokeObjectURL(link.href);
   } catch (e) {
-    console.error('Failed to delete history item:', e);
+    console.error('Failed to download report:', e);
+    alert('Failed to retrieve and download the report. It may have been deleted.');
   }
 }
 
-function clearHistory() {
-  if (confirm('Are you sure you want to clear your entire analysis history? This cannot be undone.')) {
-    try {
-      localStorage.removeItem('crawl_history');
-      history.value = [];
-    } catch (e) {
-      console.error('Failed to clear history:', e);
-    }
+async function deleteItem(url: string) {
+  if (!confirm('Are you sure you want to delete this report from the shared repository?')) return;
+  try {
+    await $fetch(`/api/history?url=${encodeURIComponent(url)}`, {
+      method: 'DELETE'
+    });
+    history.value = history.value.filter((item: any) => item.url !== url);
+  } catch (e) {
+    console.error('Failed to delete history item:', e);
   }
 }
 </script>
