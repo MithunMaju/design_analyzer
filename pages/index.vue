@@ -132,16 +132,7 @@
             >
               Download .md
             </button>
-            
-            <button
-              @click="deleteItem(item.url)"
-              class="p-2 border border-theme-border hover:border-red-200 hover:bg-red-50 text-theme-muted hover:text-red-500 transition-all rounded-lg"
-              title="Delete from history"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
+
           </div>
         </div>
       </div>
@@ -203,18 +194,6 @@ async function downloadReport(item: any) {
   } catch (e) {
     console.error('Failed to download report:', e);
     alert('Failed to retrieve and download the report. It may have been deleted.');
-  }
-}
-
-async function deleteItem(url: string) {
-  if (!confirm('Are you sure you want to delete this report from the shared repository?')) return;
-  try {
-    await $fetch(`/api/history?url=${encodeURIComponent(url)}`, {
-      method: 'DELETE'
-    });
-    history.value = history.value.filter((item: any) => item.url !== url);
-  } catch (e) {
-    console.error('Failed to delete history item:', e);
   }
 }
 </script>
