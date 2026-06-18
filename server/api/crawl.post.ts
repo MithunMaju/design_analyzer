@@ -607,7 +607,7 @@ export default defineEventHandler(async (event) => {
           token: scrapeDoToken,
           url: targetUrl,
           render: 'true',
-          screenShot: 'true',
+          fullScreenShot: 'true',
           returnJSON: 'true',
           width: isMobile ? '390' : '1440',
           height: isMobile ? '844' : '1000',
