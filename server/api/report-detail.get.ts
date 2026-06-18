@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const storage = useStorage('reports');
-  const key = Buffer.from(urlStr).toString('base64url');
+  const key = btoa(urlStr).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   const data = await storage.getItem(key);
   if (!data) {
     throw createError({ statusCode: 404, message: 'Report not found' });

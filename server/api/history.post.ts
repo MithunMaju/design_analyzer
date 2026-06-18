@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
 
   const storage = useStorage('reports');
   // Use a base64url slug of the full URL as a unique, filesystem-safe key
-  const key = Buffer.from(body.url).toString('base64url');
+  const key = btoa(body.url).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
   const payload = {
     url: body.url,
