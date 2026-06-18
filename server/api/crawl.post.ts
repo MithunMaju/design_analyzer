@@ -205,12 +205,11 @@ function getDomData() {
     } catch (e) {}
   }
 
-  const isCfChallenge = !!document.querySelector('#challenge-form, #challenge-stage, #cf-wrapper, .cf-turnstile, #turnstile-wrapper') ||
+  const isCfChallenge = !!document.querySelector('#challenge-form, #challenge-stage, #cf-wrapper') ||
                        document.title.toLowerCase().includes('just a moment') ||
                        document.title.toLowerCase().includes('verify you are human') ||
                        document.title.toLowerCase().includes('performing security verification') ||
-                       document.title.toLowerCase().includes('checking if the site connection is secure') ||
-                       (document.body && document.body.innerHTML.includes('cdn-cgi/challenge-platform'));
+                       document.title.toLowerCase().includes('checking if the site connection is secure');
 
   return {
     isCfChallenge,
@@ -241,14 +240,14 @@ function parseDataFromHtml(html: string, baseUrl: string) {
   const stripHtml = (s: string) => norm(s.replace(/<[^>]*>/g, ''));
 
   const lowercaseHtml = html.toLowerCase();
-  const isCfChallenge = lowercaseHtml.includes('cf-challenge') || 
-                        lowercaseHtml.includes('turnstile') || 
+  const isCfChallenge = lowercaseHtml.includes('id="challenge-form"') || 
+                        lowercaseHtml.includes('id="challenge-stage"') || 
                         lowercaseHtml.includes('verify you are human') ||
                         lowercaseHtml.includes('performing security verification') ||
                         lowercaseHtml.includes('attention required! | cloudflare') ||
                         lowercaseHtml.includes('checking if the site connection is secure') ||
                         lowercaseHtml.includes('just a moment') ||
-                        lowercaseHtml.includes('cdn-cgi/challenge-platform');
+                        lowercaseHtml.includes('cf-challenge');
 
   let title = '';
   const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
@@ -559,12 +558,14 @@ export default defineEventHandler(async (event) => {
       function verifyScrapeDoResponse(json: any) {
         const html = json.content || '';
         const lowercaseHtml = html.toLowerCase();
-        const isCfChallenge = lowercaseHtml.includes('cf-challenge') || 
-                              lowercaseHtml.includes('turnstile') || 
+        const isCfChallenge = lowercaseHtml.includes('id="challenge-form"') || 
+                              lowercaseHtml.includes('id="challenge-stage"') || 
                               lowercaseHtml.includes('verify you are human') ||
                               lowercaseHtml.includes('performing security verification') ||
                               lowercaseHtml.includes('attention required! | cloudflare') ||
-                              lowercaseHtml.includes('checking if the site connection is secure');
+                              lowercaseHtml.includes('checking if the site connection is secure') ||
+                              lowercaseHtml.includes('just a moment') ||
+                              lowercaseHtml.includes('cf-challenge');
         
         if (isCfChallenge) {
           throw new Error("Scrape.do response contains a Cloudflare challenge page / Turnstile CAPTCHA");
@@ -586,7 +587,10 @@ export default defineEventHandler(async (event) => {
                   "div[class*='signup-modal']", "div[id*='signup-modal']",
                   "div[role='dialog']", "div[class*='overlay']",
                   "div[class*='popup']", "div[class*='modal-backdrop']",
-                  "div[class*='modal-wrapper']", "div[class*='Modal-root']"
+                  "div[class*='modal-wrapper']", "div[class*='Modal-root']",
+                  "#challenge-stage", "#challenge-form", "#cf-wrapper",
+                  ".cf-turnstile", "#turnstile-wrapper", ".cf-turnstile-wrapper",
+                  "iframe[src*='challenges.cloudflare.com']"
                 ];
                 for (const sel of overlaySelectors) {
                   document.querySelectorAll(sel).forEach(el => {
@@ -749,11 +753,14 @@ export default defineEventHandler(async (event) => {
       throw new Error("Puppeteer returned empty data structure");
     }
     const title = (data.domData.title || '').toLowerCase();
-    const isCf = title.includes('verify you are human') || 
-                 title.includes('checking if the site connection is secure') ||
-                 title.includes('performing security verification') ||
-                 title.includes('cloudflare') ||
-                 title.includes('attention required! | cloudflare');
+    const hasChallengeTitle = title.includes('verify you are human') || 
+                              title.includes('checking if the site connection is secure') ||
+                              title.includes('performing security verification') ||
+                              title.includes('cloudflare') ||
+                              title.includes('attention required! | cloudflare') ||
+                              title.includes('just a moment');
+    const headingsCount = (data.domData.headings?.h1?.length || 0) + (data.domData.headings?.h2?.length || 0);
+    const isCf = hasChallengeTitle || (!!data.domData.isCfChallenge && headingsCount === 0);
     if (isCf) {
       throw new Error("Puppeteer request was blocked by Cloudflare Turnstile CAPTCHA");
     }
@@ -837,7 +844,10 @@ export default defineEventHandler(async (event) => {
               "div[class*='signup-modal']", "div[id*='signup-modal']",
               "div[role='dialog']", "div[class*='overlay']",
               "div[class*='popup']", "div[class*='modal-backdrop']",
-              "div[class*='modal-wrapper']", "div[class*='Modal-root']"
+              "div[class*='modal-wrapper']", "div[class*='Modal-root']",
+              "#challenge-stage", "#challenge-form", "#cf-wrapper",
+              ".cf-turnstile", "#turnstile-wrapper", ".cf-turnstile-wrapper",
+              "iframe[src*='challenges.cloudflare.com']"
             ];
             for (const sel of overlaySelectors) {
               document.querySelectorAll(sel).forEach(el => {
@@ -930,7 +940,10 @@ export default defineEventHandler(async (event) => {
               "div[class*='signup-modal']", "div[id*='signup-modal']",
               "div[role='dialog']", "div[class*='overlay']",
               "div[class*='popup']", "div[class*='modal-backdrop']",
-              "div[class*='modal-wrapper']", "div[class*='Modal-root']"
+              "div[class*='modal-wrapper']", "div[class*='Modal-root']",
+              "#challenge-stage", "#challenge-form", "#cf-wrapper",
+              ".cf-turnstile", "#turnstile-wrapper", ".cf-turnstile-wrapper",
+              "iframe[src*='challenges.cloudflare.com']"
             ];
             for (const sel of overlaySelectors) {
               document.querySelectorAll(sel).forEach(el => {
@@ -1046,7 +1059,10 @@ export default defineEventHandler(async (event) => {
         '        "div[class*=\'signup-modal\']", "div[id*=\'signup-modal\']",',
         '        "div[role=\'dialog\']", "div[class*=\'overlay\']",',
         '        "div[class*=\'popup\']", "div[class*=\'modal-backdrop\']",',
-        '        "div[class*=\'modal-wrapper\']", "div[class*=\'Modal-root\']"',
+        '        "div[class*=\'modal-wrapper\']", "div[class*=\'Modal-root\']",',
+        '        "#challenge-stage", "#challenge-form", "#cf-wrapper",',
+        '        ".cf-turnstile", "#turnstile-wrapper", ".cf-turnstile-wrapper",',
+        '        "iframe[src*=\'challenges.cloudflare.com\']"',
         '      ];',
         '      for (const sel of overlaySelectors) {',
         '        document.querySelectorAll(sel).forEach(el => {',
@@ -1143,7 +1159,10 @@ export default defineEventHandler(async (event) => {
               "div[class*='signup-modal']", "div[id*='signup-modal']",
               "div[role='dialog']", "div[class*='overlay']",
               "div[class*='popup']", "div[class*='modal-backdrop']",
-              "div[class*='modal-wrapper']", "div[class*='Modal-root']"
+              "div[class*='modal-wrapper']", "div[class*='Modal-root']",
+              "#challenge-stage", "#challenge-form", "#cf-wrapper",
+              ".cf-turnstile", "#turnstile-wrapper", ".cf-turnstile-wrapper",
+              "iframe[src*='challenges.cloudflare.com']"
             ];
             for (const sel of overlaySelectors) {
               document.querySelectorAll(sel).forEach(el => {
