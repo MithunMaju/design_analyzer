@@ -726,6 +726,21 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  function verifyPuppeteerResponse(data: any) {
+    if (!data || !data.domData) {
+      throw new Error("Puppeteer returned empty data structure");
+    }
+    const title = (data.domData.title || '').toLowerCase();
+    const isCf = title.includes('verify you are human') || 
+                 title.includes('checking if the site connection is secure') ||
+                 title.includes('performing security verification') ||
+                 title.includes('cloudflare') ||
+                 title.includes('attention required! | cloudflare');
+    if (isCf) {
+      throw new Error("Puppeteer request was blocked by Cloudflare Turnstile CAPTCHA");
+    }
+  }
+
   // ─── Mode B: Cloudflare Browser Rendering (Production) ────────────────
   if (!crawled && myBrowser) {
     try {
@@ -837,6 +852,7 @@ export default defineEventHandler(async (event) => {
           cssTexts,
           jsUrls
         };
+        verifyPuppeteerResponse(desktop);
 
         // Take screenshot
         desktopScreenshot = await desktopPage.screenshot({
@@ -926,6 +942,7 @@ export default defineEventHandler(async (event) => {
         mobile = {
           domData: mobileDomData
         };
+        verifyPuppeteerResponse(mobile);
 
         // Take screenshot
         mobileScreenshot = await mobilePage.screenshot({
@@ -1147,6 +1164,9 @@ export default defineEventHandler(async (event) => {
 
       desktop = desktopResult?.data || {};
       mobile = mobileResult?.data || {};
+
+      verifyPuppeteerResponse(desktop);
+      verifyPuppeteerResponse(mobile);
     } catch (err: any) {
       throw createError({
         statusCode: 500,
