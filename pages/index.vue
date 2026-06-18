@@ -89,7 +89,8 @@
 
       <!-- Screenshots -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div v-if="result.screenshot" class="bg-theme-card-bg border border-theme-border p-3 rounded-2xl overflow-hidden shadow-md flex flex-col h-[600px]">
+        <!-- Desktop Screenshot Card -->
+        <div class="bg-theme-card-bg border border-theme-border p-3 rounded-2xl overflow-hidden shadow-md flex flex-col h-[600px]">
           <div class="px-3 py-2 border-b border-theme-border flex justify-between items-center flex-shrink-0">
             <div class="flex gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full bg-red-400/80"></span>
@@ -98,15 +99,27 @@
             </div>
             <span class="font-display text-[9px] text-theme-muted uppercase tracking-wider font-semibold">Desktop (1440px)</span>
           </div>
-          <div class="flex-1 overflow-x-hidden overflow-y-auto mt-2 rounded-lg screenshot-viewport">
+          <div v-if="result.screenshot" class="flex-1 overflow-x-hidden overflow-y-auto mt-2 rounded-lg screenshot-viewport">
             <img
               :src="`data:image/jpeg;base64,${result.screenshot}`"
               alt="Desktop screenshot"
               class="w-full block h-auto object-cover object-top"
             />
           </div>
+          <div v-else class="flex-1 flex flex-col items-center justify-center p-8 text-center bg-neutral-50 dark:bg-neutral-900/40 mt-2 rounded-lg border border-dashed border-theme-border">
+            <svg class="w-10 h-10 text-theme-muted/50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <p class="font-display text-[10px] text-theme-dark uppercase tracking-widest font-bold mb-2">Screenshot Skipped</p>
+            <p class="text-[11px] text-theme-muted max-w-[240px] leading-relaxed">
+              Target site (like Reddit) has heavy media load times causing the screenshot proxy step to be omitted to prioritize data/custom property extraction.
+            </p>
+          </div>
         </div>
-        <div v-if="result.mobileScreenshot" class="bg-theme-card-bg border border-theme-border p-3 rounded-2xl overflow-hidden shadow-md flex flex-col h-[600px]">
+
+        <!-- Mobile Screenshot Card -->
+        <div class="bg-theme-card-bg border border-theme-border p-3 rounded-2xl overflow-hidden shadow-md flex flex-col h-[600px]">
           <div class="px-3 py-2 border-b border-theme-border flex justify-between items-center flex-shrink-0">
             <div class="flex gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full bg-red-400/80"></span>
@@ -115,12 +128,21 @@
             </div>
             <span class="font-display text-[9px] text-theme-muted uppercase tracking-wider font-semibold">Mobile (390px)</span>
           </div>
-          <div class="flex-1 overflow-x-hidden overflow-y-auto mt-2 rounded-lg screenshot-viewport">
+          <div v-if="result.mobileScreenshot" class="flex-1 overflow-x-hidden overflow-y-auto mt-2 rounded-lg screenshot-viewport">
             <img
               :src="`data:image/jpeg;base64,${result.mobileScreenshot}`"
               alt="Mobile screenshot"
               class="w-full block h-auto object-cover object-top"
             />
+          </div>
+          <div v-else class="flex-1 flex flex-col items-center justify-center p-8 text-center bg-neutral-50 dark:bg-neutral-900/40 mt-2 rounded-lg border border-dashed border-theme-border">
+            <svg class="w-10 h-10 text-theme-muted/50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            <p class="font-display text-[10px] text-theme-dark uppercase tracking-widest font-bold mb-2">Screenshot Skipped</p>
+            <p class="text-[11px] text-theme-muted max-w-[240px] leading-relaxed">
+              Target site (like Reddit) has heavy media load times causing the screenshot proxy step to be omitted to prioritize data/custom property extraction.
+            </p>
           </div>
         </div>
       </div>
