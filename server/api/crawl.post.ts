@@ -538,6 +538,24 @@ export default defineEventHandler(async (event) => {
       console.log("Attempting crawl with Scrape.do...");
       const regex = /<script id="extracted-design-data" type="application\/json">([\s\S]*?)<\/script>/;
 
+      function verifyScrapeDoResponse(json: any) {
+        const html = json.content || '';
+        const lowercaseHtml = html.toLowerCase();
+        const isCfChallenge = lowercaseHtml.includes('cf-challenge') || 
+                              lowercaseHtml.includes('turnstile') || 
+                              lowercaseHtml.includes('verify you are human') ||
+                              lowercaseHtml.includes('performing security verification') ||
+                              lowercaseHtml.includes('attention required! | cloudflare') ||
+                              lowercaseHtml.includes('checking if the site connection is secure');
+        
+        if (isCfChallenge) {
+          throw new Error("Scrape.do response contains a Cloudflare challenge page / Turnstile CAPTCHA");
+        }
+        if (!html.trim()) {
+          throw new Error("Scrape.do returned empty content");
+        }
+      }
+
       // Helper function to call Scrape.do with standard or super proxies
       async function scrapeWithDo(superProxy: boolean, isMobile: boolean): Promise<any> {
         const playWithBrowser = [
@@ -611,6 +629,7 @@ export default defineEventHandler(async (event) => {
           returnJSON: 'true',
           width: isMobile ? '390' : '1440',
           height: isMobile ? '844' : '1000',
+          customHeaders: 'true',
           playWithBrowser: JSON.stringify(playWithBrowser)
         });
         if (superProxy) {
@@ -630,23 +649,11 @@ export default defineEventHandler(async (event) => {
       try {
         console.log("Scrape.do: Attempting desktop crawl with standard proxies...");
         desktopJson = await scrapeWithDo(false, false);
-
-        // Check if standard crawl got blocked/rendered empty
-        const html = desktopJson.content || '';
-        const desktopMatch = html.match(regex);
-        let domData: any = {};
-        if (desktopMatch && desktopMatch[1]) {
-          try {
-            domData = JSON.parse(desktopMatch[1].trim());
-          } catch {}
-        }
-        const customPropsCount = Object.keys(domData.customProperties || {}).length;
-        if (!domData.title && customPropsCount === 0) {
-          throw new Error("Crawl returned empty title and 0 custom properties (likely blocked or Cloudflare challenged)");
-        }
+        verifyScrapeDoResponse(desktopJson);
       } catch (err: any) {
         console.warn("Scrape.do: Standard desktop crawl failed or blocked, retrying with super proxy...", err.message);
         desktopJson = await scrapeWithDo(true, false);
+        verifyScrapeDoResponse(desktopJson);
       }
 
       const desktopHtml = desktopJson.content || '';
@@ -681,23 +688,11 @@ export default defineEventHandler(async (event) => {
       try {
         console.log("Scrape.do: Attempting mobile crawl with standard proxies...");
         mobileJson = await scrapeWithDo(false, true);
-
-        // Check if standard crawl got blocked/rendered empty
-        const html = mobileJson.content || '';
-        const mobileMatch = html.match(regex);
-        let domData: any = {};
-        if (mobileMatch && mobileMatch[1]) {
-          try {
-            domData = JSON.parse(mobileMatch[1].trim());
-          } catch {}
-        }
-        const customPropsCount = Object.keys(domData.customProperties || {}).length;
-        if (!domData.title && customPropsCount === 0) {
-          throw new Error("Crawl returned empty title and 0 custom properties (likely blocked or Cloudflare challenged)");
-        }
+        verifyScrapeDoResponse(mobileJson);
       } catch (err: any) {
         console.warn("Scrape.do: Standard mobile crawl failed or blocked, retrying with super proxy...", err.message);
         mobileJson = await scrapeWithDo(true, true);
+        verifyScrapeDoResponse(mobileJson);
       }
 
       const mobileHtml = mobileJson.content || '';
