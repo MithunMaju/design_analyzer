@@ -205,7 +205,15 @@ function getDomData() {
     } catch (e) {}
   }
 
+  const isCfChallenge = !!document.querySelector('#challenge-form, #challenge-stage, #cf-wrapper, .cf-turnstile, #turnstile-wrapper') ||
+                       document.title.toLowerCase().includes('just a moment') ||
+                       document.title.toLowerCase().includes('verify you are human') ||
+                       document.title.toLowerCase().includes('performing security verification') ||
+                       document.title.toLowerCase().includes('checking if the site connection is secure') ||
+                       (document.body && document.body.innerHTML.includes('cdn-cgi/challenge-platform'));
+
   return {
+    isCfChallenge,
     customProperties, gradientProperties, glowProperties, computedStyles,
     colorSamples: [...colorSet].slice(0, 60), contactInfo, htmlRoutes,
     microCopy, cardDescriptions, stats, libraryEvidence, headings,
@@ -231,6 +239,16 @@ function decodeHtmlEntities(str: string): string {
 function parseDataFromHtml(html: string, baseUrl: string) {
   const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
   const stripHtml = (s: string) => norm(s.replace(/<[^>]*>/g, ''));
+
+  const lowercaseHtml = html.toLowerCase();
+  const isCfChallenge = lowercaseHtml.includes('cf-challenge') || 
+                        lowercaseHtml.includes('turnstile') || 
+                        lowercaseHtml.includes('verify you are human') ||
+                        lowercaseHtml.includes('performing security verification') ||
+                        lowercaseHtml.includes('attention required! | cloudflare') ||
+                        lowercaseHtml.includes('checking if the site connection is secure') ||
+                        lowercaseHtml.includes('just a moment') ||
+                        lowercaseHtml.includes('cdn-cgi/challenge-platform');
 
   let title = '';
   const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
@@ -370,7 +388,6 @@ function parseDataFromHtml(html: string, baseUrl: string) {
 
   // Extract library evidence
   const libraryEvidence: string[] = [];
-  const lowercaseHtml = html.toLowerCase();
   if (jsUrls.some(u => u.includes('react') || u.includes('/chunks/')) || lowercaseHtml.includes('react-root') || lowercaseHtml.includes('_next/data')) {
     libraryEvidence.push('React');
   }
@@ -503,6 +520,7 @@ function parseDataFromHtml(html: string, baseUrl: string) {
     images: uniqImages,
     hasNavToggle: html.includes('hamburger') || html.includes('menu-toggle') || html.includes('nav-toggle'),
     filterItems: [],
+    isCfChallenge,
     forms,
     cssUrls,
     jsUrls,
