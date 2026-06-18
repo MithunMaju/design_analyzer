@@ -5,6 +5,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     geminiApiKey: process.env.GEMINI_API_KEY || '',
     browserlessApiKey: process.env.BROWSERLESS_API_KEY || '',
+    scrapeDoToken: process.env.SCRAPE_DO_TOKEN || '',
     public: {},
   },
   nitro: {

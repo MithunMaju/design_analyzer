@@ -169,6 +169,42 @@ function getDomData() {
   const hasNavToggle = !!document.querySelector('[class*="hamburger"],[class*="menu-toggle"],[class*="nav-toggle"],[aria-label*="menu"]');
   const filterItems = uniqArr(Array.from(document.querySelectorAll('[class*="filter"] button,[class*="tab"] button')).map(el => norm(el.textContent)).filter(Boolean));
 
+  // Extract CSS, JS links and inline CSS text
+  const cssUrls: string[] = [];
+  const jsUrls: string[] = [];
+  const cssTexts: string[] = [];
+  document.querySelectorAll('link[rel="stylesheet"]').forEach(el => {
+    try {
+      const href = (el as HTMLLinkElement).href;
+      if (href) cssUrls.push(href);
+    } catch {}
+  });
+  document.querySelectorAll('script[src]').forEach(el => {
+    try {
+      const src = (el as HTMLScriptElement).src;
+      if (src) jsUrls.push(src);
+    } catch {}
+  });
+  document.querySelectorAll('style').forEach(el => {
+    try {
+      const text = el.textContent;
+      if (text) cssTexts.push(text);
+    } catch {}
+  });
+  for (let i = 0; i < document.styleSheets.length; i++) {
+    try {
+      const sheet = document.styleSheets[i];
+      const rules = sheet.cssRules || sheet.rules;
+      if (rules) {
+        let css = '';
+        for (let j = 0; j < rules.length; j++) {
+          css += rules[j].cssText + '\n';
+        }
+        cssTexts.push(css);
+      }
+    } catch (e) {}
+  }
+
   return {
     customProperties, gradientProperties, glowProperties, computedStyles,
     colorSamples: [...colorSet].slice(0, 60), contactInfo, htmlRoutes,
@@ -176,6 +212,9 @@ function getDomData() {
     navLinks, visibleButtons, bodyFont, h1Font, title, metaDescription,
     elementSummary, images, hasNavToggle, filterItems,
     forms: Array.from(document.querySelectorAll('form')).map(f => ({ action: f.action, method: f.method, fields: Array.from(f.querySelectorAll('input,select,textarea')).map(i => (i as HTMLInputElement).name || i.type).filter(Boolean) })).slice(0, 5),
+    cssUrls,
+    jsUrls,
+    cssTexts,
   };
 }
 
@@ -192,227 +231,395 @@ export default defineEventHandler(async (event) => {
 
   const cfEnv = (event.context.cloudflare?.env || {}) as Record<string, any>;
   const myBrowser = cfEnv.MYBROWSER;
+  const scrapeDoToken = cfEnv.SCRAPE_DO_TOKEN || useRuntimeConfig().scrapeDoToken;
 
   // Variables to be populated by either execution branch
   let desktop: any = {};
   let mobile: any = {};
   let desktopScreenshot = '';
   let mobileScreenshot = '';
+  let crawled = false;
 
-  if (myBrowser) {
-    // ─── Mode A: Cloudflare Browser Rendering (Production) ────────────────
-    const puppeteerModule = await import('@cloudflare/puppeteer');
-    const puppeteer = puppeteerModule.default || puppeteerModule;
-    const browser = await puppeteer.launch(myBrowser);
-
-    const cssTexts: string[] = [];
-    const cssUrls: string[] = [];
-    const jsUrls: string[] = [];
-
+  // ─── Mode A: Scrape.do (Super Proxy/Render mode) ──────────────────────
+  if (scrapeDoToken) {
     try {
-      // 1. Desktop Crawl & Screenshot
-      const desktopPage = await browser.newPage();
+      console.log("Attempting crawl with Scrape.do...");
+      const regex = /<script id="extracted-design-data" type="application\/json">([\s\S]*?)<\/script>/;
 
-      // Apply basic stealth to hide webdriver flags and match platform
-      await desktopPage.evaluateOnNewDocument(() => {
-        Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-        Object.defineProperty(navigator, 'platform', { get: () => 'Linux x86_64' });
-        Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
-        Object.defineProperty(navigator, 'deviceMemory', { get: () => 8 });
-        Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 8 });
-        Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
-      });
+      // Helper function to call Scrape.do with standard or super proxies
+      async function scrapeWithDo(superProxy: boolean, isMobile: boolean): Promise<any> {
+        const playWithBrowser = [
+          {
+            "Action": "Execute",
+            "Execute": `(async () => {
+              try {
+                const overlaySelectors = [
+                  "div[class*='login-modal']", "div[id*='login-modal']",
+                  "div[class*='signup-modal']", "div[id*='signup-modal']",
+                  "div[role='dialog']", "div[class*='overlay']",
+                  "div[class*='popup']", "div[class*='modal-backdrop']",
+                  "div[class*='modal-wrapper']", "div[class*='Modal-root']"
+                ];
+                for (const sel of overlaySelectors) {
+                  document.querySelectorAll(sel).forEach(el => {
+                    if (el.tagName !== "BODY" && el.tagName !== "HTML" && el.tagName !== "MAIN") {
+                      el.style.setProperty("display", "none", "important");
+                    }
+                  });
+                }
+                document.body.style.setProperty("overflow", "auto", "important");
+                document.body.style.setProperty("position", "static", "important");
+                document.documentElement.style.setProperty("overflow", "auto", "important");
+              } catch (e) {}
 
-      await desktopPage.setViewport({ width: 1440, height: 1000, deviceScaleFactor: 1 });
-      const desktopUa = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-      await desktopPage.setUserAgent(desktopUa);
+              try {
+                const totalHeight = document.body.scrollHeight;
+                const step = Math.floor(window.innerHeight * 0.8) || 600;
+                for (let pos = 0; pos < totalHeight; pos += step) {
+                  window.scrollTo(0, pos);
+                  await new Promise(r => setTimeout(r, 120));
+                }
+                window.scrollTo(0, 0);
+                await new Promise(r => setTimeout(r, 300));
+              } catch (e) {}
 
-      // Listen for stylesheet/script network responses on desktop run
-      desktopPage.on('response', async (response) => {
-        try {
-          const req = response.request();
-          const rUrl = response.url();
-          const type = req.resourceType();
-          if (type === 'stylesheet') {
-            cssUrls.push(rUrl);
-            const text = await response.text();
-            if (text) cssTexts.push(text);
-          }
-          if (type === 'script') {
-            jsUrls.push(rUrl);
-          }
-        } catch {}
-      });
-
-      await desktopPage.goto(targetUrl, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
-
-      // Bypass Amazon soft captcha page if present
-      try {
-        const captchaForm = await desktopPage.$("form[action*='/errors/validateCaptcha'], form[action*='/captcha']");
-        if (captchaForm) {
-          const submitBtn = await captchaForm.$("button, input[type='submit']");
-          if (submitBtn) {
-            await Promise.all([
-              submitBtn.click(),
-              desktopPage.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {})
-            ]);
-          }
-        }
-      } catch (e) {}
-
-      // Dismiss standard overlays/modals using Escape key
-      try {
-        await new Promise(r => setTimeout(r, 1000));
-        await desktopPage.keyboard.press('Escape');
-        await new Promise(r => setTimeout(r, 500));
-      } catch (e) {}
-
-      // Scroll to trigger lazy loading and reveal animations
-      await desktopPage.evaluate(async () => {
-        try {
-          const overlaySelectors = [
-            "div[class*='login-modal']", "div[id*='login-modal']",
-            "div[class*='signup-modal']", "div[id*='signup-modal']",
-            "div[role='dialog']", "div[class*='overlay']",
-            "div[class*='popup']", "div[class*='modal-backdrop']",
-            "div[class*='modal-wrapper']", "div[class*='Modal-root']"
-          ];
-          for (const sel of overlaySelectors) {
-            document.querySelectorAll(sel).forEach(el => {
-              if (el.tagName !== "BODY" && el.tagName !== "HTML" && el.tagName !== "MAIN") {
-                (el as HTMLElement).style.setProperty("display", "none", "important");
+              try {
+                const data = (${getDomData.toString()})();
+                const script = document.createElement("script");
+                script.id = "extracted-design-data";
+                script.type = "application/json";
+                script.textContent = JSON.stringify(data);
+                document.body.appendChild(script);
+              } catch (e) {
+                const script = document.createElement("script");
+                script.id = "extracted-design-data";
+                script.type = "application/json";
+                script.textContent = JSON.stringify({ error: e.message });
+                document.body.appendChild(script);
               }
-            });
+            })()`
+          },
+          {
+            "Action": "Wait",
+            "Timeout": 3000
           }
-          document.body.style.setProperty("overflow", "auto", "important");
-          document.body.style.setProperty("position", "static", "important");
-          document.documentElement.style.setProperty("overflow", "auto", "important");
-        } catch (e) {}
+        ];
 
-        const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
-        const totalHeight = document.body.scrollHeight;
-        const step = Math.floor(window.innerHeight * 0.8);
-        for (let pos = 0; pos < totalHeight; pos += step) {
-          window.scrollTo(0, pos);
-          await delay(120);
+        const headers = {
+          'User-Agent': isMobile 
+            ? "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+            : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        };
+
+        const params = new URLSearchParams({
+          token: scrapeDoToken,
+          url: targetUrl,
+          render: 'true',
+          fullScreenShot: 'true',
+          returnJSON: 'true',
+          width: isMobile ? '390' : '1440',
+          height: isMobile ? '844' : '1000',
+          playWithBrowser: JSON.stringify(playWithBrowser)
+        });
+        if (superProxy) {
+          params.append('super', 'true');
         }
-        window.scrollTo(0, 0);
-        await delay(300);
-      });
 
-      // Extract DOM Data
-      const desktopDomData = await desktopPage.evaluate(getDomData);
+        const res = await fetch(`https://api.scrape.do/?${params.toString()}`, { headers });
+        if (!res.ok) {
+          const errText = await res.text().catch(() => 'unknown');
+          throw new Error(`Status ${res.status}: ${errText.slice(0, 200)}`);
+        }
+        return res.json();
+      }
+
+      // 1. Desktop Crawl
+      let desktopJson: any;
+      try {
+        console.log("Scrape.do: Attempting desktop crawl with standard proxies...");
+        desktopJson = await scrapeWithDo(false, false);
+      } catch (err: any) {
+        console.warn("Scrape.do: Standard desktop crawl failed, retrying with super proxy...", err.message);
+        desktopJson = await scrapeWithDo(true, false);
+      }
+
+      const desktopHtml = desktopJson.content || '';
+      desktopScreenshot = desktopJson.screenShots?.[0]?.image || '';
+
+      const desktopMatch = desktopHtml.match(regex);
+      let desktopDomData: any = {};
+      if (desktopMatch && desktopMatch[1]) {
+        try {
+          desktopDomData = JSON.parse(desktopMatch[1].trim());
+        } catch (e) {
+          console.error("Failed to parse Scrape.do Desktop DOM data:", e);
+        }
+      }
+
       desktop = {
         domData: desktopDomData,
-        cssUrls,
-        cssTexts,
-        jsUrls
+        cssUrls: desktopDomData.cssUrls || [],
+        cssTexts: desktopDomData.cssTexts || [],
+        jsUrls: desktopDomData.jsUrls || []
       };
 
-      // Take screenshot
-      desktopScreenshot = await desktopPage.screenshot({
-        type: 'jpeg',
-        quality: 75,
-        fullPage: true,
-        encoding: 'base64'
-      }) as string;
-
-      await desktopPage.close();
-
-      // 2. Mobile Crawl & Screenshot
-      const mobilePage = await browser.newPage();
-
-      // Apply basic stealth to hide webdriver flags and match platform
-      await mobilePage.evaluateOnNewDocument(() => {
-        Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-        Object.defineProperty(navigator, 'platform', { get: () => 'Linux armv8l' });
-        Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
-        Object.defineProperty(navigator, 'deviceMemory', { get: () => 4 });
-        Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 4 });
-        Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
-      });
-
-      await mobilePage.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 });
-      const mobileUa = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36";
-      await mobilePage.setUserAgent(mobileUa);
-
-      await mobilePage.goto(targetUrl, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
-
-      // Bypass Amazon soft captcha page if present on mobile
+      // 2. Mobile Crawl
+      let mobileJson: any;
       try {
-        const captchaForm = await mobilePage.$("form[action*='/errors/validateCaptcha'], form[action*='/captcha']");
-        if (captchaForm) {
-          const submitBtn = await captchaForm.$("button, input[type='submit']");
-          if (submitBtn) {
-            await Promise.all([
-              submitBtn.click(),
-              mobilePage.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {})
-            ]);
-          }
-        }
-      } catch (e) {}
+        console.log("Scrape.do: Attempting mobile crawl with standard proxies...");
+        mobileJson = await scrapeWithDo(false, true);
+      } catch (err: any) {
+        console.warn("Scrape.do: Standard mobile crawl failed, retrying with super proxy...", err.message);
+        mobileJson = await scrapeWithDo(true, true);
+      }
 
-      // Dismiss standard overlays/modals using Escape key
-      try {
-        await new Promise(r => setTimeout(r, 1000));
-        await mobilePage.keyboard.press('Escape');
-        await new Promise(r => setTimeout(r, 500));
-      } catch (e) {}
+      const mobileHtml = mobileJson.content || '';
+      mobileScreenshot = mobileJson.screenShots?.[0]?.image || '';
 
-      // Scroll to trigger lazy loading and reveal animations on mobile
-      await mobilePage.evaluate(async () => {
+      const mobileMatch = mobileHtml.match(regex);
+      let mobileDomData: any = {};
+      if (mobileMatch && mobileMatch[1]) {
         try {
-          const overlaySelectors = [
-            "div[class*='login-modal']", "div[id*='login-modal']",
-            "div[class*='signup-modal']", "div[id*='signup-modal']",
-            "div[role='dialog']", "div[class*='overlay']",
-            "div[class*='popup']", "div[class*='modal-backdrop']",
-            "div[class*='modal-wrapper']", "div[class*='Modal-root']"
-          ];
-          for (const sel of overlaySelectors) {
-            document.querySelectorAll(sel).forEach(el => {
-              if (el.tagName !== "BODY" && el.tagName !== "HTML" && el.tagName !== "MAIN") {
-                (el as HTMLElement).style.setProperty("display", "none", "important");
-              }
-            });
-          }
-          document.body.style.setProperty("overflow", "auto", "important");
-          document.body.style.setProperty("position", "static", "important");
-          document.documentElement.style.setProperty("overflow", "auto", "important");
-        } catch (e) {}
-
-        const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
-        const totalHeight = document.body.scrollHeight;
-        const step = Math.floor(window.innerHeight * 0.8);
-        for (let pos = 0; pos < totalHeight; pos += step) {
-          window.scrollTo(0, pos);
-          await delay(120);
+          mobileDomData = JSON.parse(mobileMatch[1].trim());
+        } catch (e) {
+          console.error("Failed to parse Scrape.do Mobile DOM data:", e);
         }
-        window.scrollTo(0, 0);
-        await delay(300);
-      });
+      }
 
-      // Extract DOM Data
-      const mobileDomData = await mobilePage.evaluate(getDomData);
       mobile = {
         domData: mobileDomData
       };
 
-      // Take screenshot
-      mobileScreenshot = await mobilePage.screenshot({
-        type: 'jpeg',
-        quality: 75,
-        fullPage: true,
-        encoding: 'base64'
-      }) as string;
-
-      await mobilePage.close();
-    } finally {
-      await browser.close();
+      crawled = true;
+      console.log("Scrape.do crawl completed successfully.");
+    } catch (err: any) {
+      console.warn("Scrape.do crawl failed completely, falling back to next available crawler. Error:", err.message);
     }
+  }
 
-  } else {
-    // ─── Mode B: Browserless.io (Local Dev Fallback) ───────────────────────
+  // ─── Mode B: Cloudflare Browser Rendering (Production) ────────────────
+  if (!crawled && myBrowser) {
+    try {
+      console.log("Attempting crawl with Cloudflare Browser Rendering...");
+      const puppeteerModule = await import('@cloudflare/puppeteer');
+      const puppeteer = puppeteerModule.default || puppeteerModule;
+      const browser = await puppeteer.launch(myBrowser);
+
+      const cssTexts: string[] = [];
+      const cssUrls: string[] = [];
+      const jsUrls: string[] = [];
+
+      try {
+        // 1. Desktop Crawl & Screenshot
+        const desktopPage = await browser.newPage();
+
+        // Apply basic stealth to hide webdriver flags and match platform
+        await desktopPage.evaluateOnNewDocument(() => {
+          Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+          Object.defineProperty(navigator, 'platform', { get: () => 'Linux x86_64' });
+          Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+          Object.defineProperty(navigator, 'deviceMemory', { get: () => 8 });
+          Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 8 });
+          Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+        });
+
+        await desktopPage.setViewport({ width: 1440, height: 1000, deviceScaleFactor: 1 });
+        const desktopUa = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+        await desktopPage.setUserAgent(desktopUa);
+
+        // Listen for stylesheet/script network responses on desktop run
+        desktopPage.on('response', async (response) => {
+          try {
+            const req = response.request();
+            const rUrl = response.url();
+            const type = req.resourceType();
+            if (type === 'stylesheet') {
+              cssUrls.push(rUrl);
+              const text = await response.text();
+              if (text) cssTexts.push(text);
+            }
+            if (type === 'script') {
+              jsUrls.push(rUrl);
+            }
+          } catch {}
+        });
+
+        await desktopPage.goto(targetUrl, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
+
+        // Bypass Amazon soft captcha page if present
+        try {
+          const captchaForm = await desktopPage.$("form[action*='/errors/validateCaptcha'], form[action*='/captcha']");
+          if (captchaForm) {
+            const submitBtn = await captchaForm.$("button, input[type='submit']");
+            if (submitBtn) {
+              await Promise.all([
+                submitBtn.click(),
+                desktopPage.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {})
+              ]);
+            }
+          }
+        } catch (e) {}
+
+        // Dismiss standard overlays/modals using Escape key
+        try {
+          await new Promise(r => setTimeout(r, 1000));
+          await desktopPage.keyboard.press('Escape');
+          await new Promise(r => setTimeout(r, 500));
+        } catch (e) {}
+
+        // Scroll to trigger lazy loading and reveal animations
+        await desktopPage.evaluate(async () => {
+          try {
+            const overlaySelectors = [
+              "div[class*='login-modal']", "div[id*='login-modal']",
+              "div[class*='signup-modal']", "div[id*='signup-modal']",
+              "div[role='dialog']", "div[class*='overlay']",
+              "div[class*='popup']", "div[class*='modal-backdrop']",
+              "div[class*='modal-wrapper']", "div[class*='Modal-root']"
+            ];
+            for (const sel of overlaySelectors) {
+              document.querySelectorAll(sel).forEach(el => {
+                if (el.tagName !== "BODY" && el.tagName !== "HTML" && el.tagName !== "MAIN") {
+                  (el as HTMLElement).style.setProperty("display", "none", "important");
+                }
+              });
+            }
+            document.body.style.setProperty("overflow", "auto", "important");
+            document.body.style.setProperty("position", "static", "important");
+            document.documentElement.style.setProperty("overflow", "auto", "important");
+          } catch (e) {}
+
+          const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+          const totalHeight = document.body.scrollHeight;
+          const step = Math.floor(window.innerHeight * 0.8);
+          for (let pos = 0; pos < totalHeight; pos += step) {
+            window.scrollTo(0, pos);
+            await delay(120);
+          }
+          window.scrollTo(0, 0);
+          await delay(300);
+        });
+
+        // Extract DOM Data
+        const desktopDomData = await desktopPage.evaluate(getDomData);
+        desktop = {
+          domData: desktopDomData,
+          cssUrls,
+          cssTexts,
+          jsUrls
+        };
+
+        // Take screenshot
+        desktopScreenshot = await desktopPage.screenshot({
+          type: 'jpeg',
+          quality: 75,
+          fullPage: true,
+          encoding: 'base64'
+        }) as string;
+
+        await desktopPage.close();
+
+        // 2. Mobile Crawl & Screenshot
+        const mobilePage = await browser.newPage();
+
+        // Apply basic stealth to hide webdriver flags and match platform
+        await mobilePage.evaluateOnNewDocument(() => {
+          Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+          Object.defineProperty(navigator, 'platform', { get: () => 'Linux armv8l' });
+          Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+          Object.defineProperty(navigator, 'deviceMemory', { get: () => 4 });
+          Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 4 });
+          Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+        });
+
+        await mobilePage.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 });
+        const mobileUa = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36";
+        await mobilePage.setUserAgent(mobileUa);
+
+        await mobilePage.goto(targetUrl, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
+
+        // Bypass Amazon soft captcha page if present on mobile
+        try {
+          const captchaForm = await mobilePage.$("form[action*='/errors/validateCaptcha'], form[action*='/captcha']");
+          if (captchaForm) {
+            const submitBtn = await captchaForm.$("button, input[type='submit']");
+            if (submitBtn) {
+              await Promise.all([
+                submitBtn.click(),
+                mobilePage.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {})
+              ]);
+            }
+          }
+        } catch (e) {}
+
+        // Dismiss standard overlays/modals using Escape key
+        try {
+          await new Promise(r => setTimeout(r, 1000));
+          await mobilePage.keyboard.press('Escape');
+          await new Promise(r => setTimeout(r, 500));
+        } catch (e) {}
+
+        // Scroll to trigger lazy loading and reveal animations on mobile
+        await mobilePage.evaluate(async () => {
+          try {
+            const overlaySelectors = [
+              "div[class*='login-modal']", "div[id*='login-modal']",
+              "div[class*='signup-modal']", "div[id*='signup-modal']",
+              "div[role='dialog']", "div[class*='overlay']",
+              "div[class*='popup']", "div[class*='modal-backdrop']",
+              "div[class*='modal-wrapper']", "div[class*='Modal-root']"
+            ];
+            for (const sel of overlaySelectors) {
+              document.querySelectorAll(sel).forEach(el => {
+                if (el.tagName !== "BODY" && el.tagName !== "HTML" && el.tagName !== "MAIN") {
+                  (el as HTMLElement).style.setProperty("display", "none", "important");
+                }
+              });
+            }
+            document.body.style.setProperty("overflow", "auto", "important");
+            document.body.style.setProperty("position", "static", "important");
+            document.documentElement.style.setProperty("overflow", "auto", "important");
+          } catch (e) {}
+
+          const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+          const totalHeight = document.body.scrollHeight;
+          const step = Math.floor(window.innerHeight * 0.8);
+          for (let pos = 0; pos < totalHeight; pos += step) {
+            window.scrollTo(0, pos);
+            await delay(120);
+          }
+          window.scrollTo(0, 0);
+          await delay(300);
+        });
+
+        // Extract DOM Data
+        const mobileDomData = await mobilePage.evaluate(getDomData);
+        mobile = {
+          domData: mobileDomData
+        };
+
+        // Take screenshot
+        mobileScreenshot = await mobilePage.screenshot({
+          type: 'jpeg',
+          quality: 75,
+          fullPage: true,
+          encoding: 'base64'
+        }) as string;
+
+        await mobilePage.close();
+      } finally {
+        await browser.close();
+      }
+      crawled = true;
+      console.log("Cloudflare Browser Rendering crawl completed successfully.");
+    } catch (err: any) {
+      console.warn("Cloudflare Browser Rendering crawl failed, falling back to Browserless. Error:", err.message);
+    }
+  }
+
+  // ─── Mode C: Browserless.io (Local Dev Fallback) ───────────────────────
+  if (!crawled) {
+    console.log("Attempting crawl with Browserless.io...");
     const apiKey = cfEnv.BROWSERLESS_API_KEY || cfEnv.NUXT_BROWSERLESS_API_KEY || useRuntimeConfig().browserlessApiKey;
     if (!apiKey) throw createError({ statusCode: 500, message: 'BROWSERLESS_API_KEY not set' });
 
