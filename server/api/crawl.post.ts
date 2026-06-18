@@ -1214,6 +1214,40 @@ export default defineEventHandler(async (event) => {
 
   // ─── Shared Processing of Results ───────────────────────────────────────
   try {
+    // If external stylesheets failed to load in browser (combined length is very small or empty)
+    const combinedLength = (desktop.cssTexts || []).join('').length;
+    if (combinedLength < 5000 && (desktop.cssUrls || []).length > 0 && scrapeDoToken) {
+      console.log("External stylesheets failed to load in browser. Fetching via Scrape.do proxy fallback...");
+      const fetchPromises = (desktop.cssUrls || []).slice(0, 5).map(async (cssUrl: string) => {
+        try {
+          const absoluteUrl = new URL(cssUrl, targetUrl).href;
+          const params = new URLSearchParams({
+            token: scrapeDoToken,
+            url: absoluteUrl,
+            super: 'true'
+          });
+          const res = await fetch(`https://api.scrape.do/?${params.toString()}`, {
+            signal: AbortSignal.timeout(6000)
+          });
+          if (res.ok) {
+            const text = await res.text();
+            console.log(`Successfully fetched CSS via proxy fallback: ${cssUrl.slice(0, 60)}... (${text.length} bytes)`);
+            return text;
+          }
+        } catch (e: any) {
+          console.warn(`Failed to fetch CSS fallback for ${cssUrl}:`, e.message);
+        }
+        return '';
+      });
+      const fetchedTexts = await Promise.all(fetchPromises);
+      for (const text of fetchedTexts) {
+        if (text) {
+          desktop.cssTexts = desktop.cssTexts || [];
+          desktop.cssTexts.push(text);
+        }
+      }
+    }
+
     const combinedCss = (desktop.cssTexts || []).join('\n');
 
     // ─── Simple CSS evidence extraction (regex-based, runs server-side) ───
