@@ -218,6 +218,298 @@ function getDomData() {
   };
 }
 
+function decodeHtmlEntities(str: string): string {
+  return str
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ');
+}
+
+function parseDataFromHtml(html: string, baseUrl: string) {
+  const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
+  const stripHtml = (s: string) => norm(s.replace(/<[^>]*>/g, ''));
+
+  let title = '';
+  const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+  if (titleMatch) title = decodeHtmlEntities(titleMatch[1].trim());
+
+  let metaDescription = '';
+  const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i) ||
+                    html.match(/<meta[^>]+content=["']([^"']*)["'][^>]+name=["']description["']/i);
+  if (descMatch) metaDescription = decodeHtmlEntities(descMatch[1].trim());
+
+  const cssUrls: string[] = [];
+  const jsUrls: string[] = [];
+  const cssTexts: string[] = [];
+
+  // Extract link tags rel="stylesheet"
+  const linkRegex = /<link[^>]+>/gi;
+  let linkMatch;
+  while ((linkMatch = linkRegex.exec(html)) !== null) {
+    const tag = linkMatch[0];
+    if (/rel=["']stylesheet["']/i.test(tag)) {
+      const hrefMatch = tag.match(/href=["']([^"']+)["']/i);
+      if (hrefMatch) {
+        try {
+          cssUrls.push(new URL(hrefMatch[1], baseUrl).href);
+        } catch {
+          cssUrls.push(hrefMatch[1]);
+        }
+      }
+    }
+  }
+
+  // Extract scripts src
+  const scriptRegex = /<script[^>]+src=["']([^"']+)["']/gi;
+  let scriptMatch;
+  while ((scriptMatch = scriptRegex.exec(html)) !== null) {
+    try {
+      jsUrls.push(new URL(scriptMatch[1], baseUrl).href);
+    } catch {
+      jsUrls.push(scriptMatch[1]);
+    }
+  }
+
+  // Extract inline style tags
+  const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
+  let styleMatch;
+  while ((styleMatch = styleRegex.exec(html)) !== null) {
+    cssTexts.push(styleMatch[1]);
+  }
+
+  // Extract style attribute properties
+  const styleAttrRegex = /style=["']([^"']+)["']/gi;
+  let sam;
+  while ((sam = styleAttrRegex.exec(html)) !== null) {
+    cssTexts.push(sam[1]);
+  }
+
+  // Extract routes
+  const htmlRoutes: string[] = [];
+  const aRegex = /<a[^>]+href=["']([^"']+)["']/gi;
+  let am;
+  const parsedBase = new URL(baseUrl);
+  while ((am = aRegex.exec(html)) !== null) {
+    const href = am[1];
+    if (href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) continue;
+    try {
+      const parsed = new URL(href, baseUrl);
+      if (parsed.hostname === parsedBase.hostname) {
+        htmlRoutes.push(parsed.pathname);
+      }
+    } catch {}
+  }
+  const uniqRoutes = [...new Set(htmlRoutes)].slice(0, 80);
+
+  // Extract headings
+  const headings = { h1: [] as string[], h2: [] as string[], h3: [] as string[] };
+  const h1Regex = /<h1[^>]*>([\s\S]*?)<\/h1>/gi;
+  let hm;
+  while ((hm = h1Regex.exec(html)) !== null) {
+    const t = stripHtml(decodeHtmlEntities(hm[1]));
+    if (t) headings.h1.push(t);
+  }
+  headings.h1 = headings.h1.slice(0, 5);
+
+  const h2Regex = /<h2[^>]*>([\s\S]*?)<\/h2>/gi;
+  while ((hm = h2Regex.exec(html)) !== null) {
+    const t = stripHtml(decodeHtmlEntities(hm[1]));
+    if (t) headings.h2.push(t);
+  }
+  headings.h2 = headings.h2.slice(0, 10);
+
+  const h3Regex = /<h3[^>]*>([\s\S]*?)<\/h3>/gi;
+  while ((hm = h3Regex.exec(html)) !== null) {
+    const t = stripHtml(decodeHtmlEntities(hm[1]));
+    if (t) headings.h3.push(t);
+  }
+  headings.h3 = headings.h3.slice(0, 15);
+
+  // Extract images
+  const images: string[] = [];
+  const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi;
+  let im;
+  while ((im = imgRegex.exec(html)) !== null) {
+    try {
+      images.push(new URL(im[1], baseUrl).href);
+    } catch {
+      images.push(im[1]);
+    }
+  }
+  const uniqImages = [...new Set(images)].slice(0, 30);
+
+  // Extract forms
+  const forms: any[] = [];
+  const formRegex = /<form([^>]*)>([\s\S]*?)<\/form>/gi;
+  let fm;
+  while ((fm = formRegex.exec(html)) !== null) {
+    const attrs = fm[1];
+    const content = fm[2];
+    const actionMatch = attrs.match(/action=["']([^"']+)["']/i);
+    const methodMatch = attrs.match(/method=["']([^"']+)["']/i);
+    const action = actionMatch ? actionMatch[1] : '';
+    const method = methodMatch ? methodMatch[1] : 'get';
+    const fields: string[] = [];
+    const inputRegex = /<(input|select|textarea)[^>]*>/gi;
+    let ipm;
+    while ((ipm = inputRegex.exec(content)) !== null) {
+      const tag = ipm[0];
+      const nameMatch = tag.match(/name=["']([^"']+)["']/i);
+      const typeMatch = tag.match(/type=["']([^"']+)["']/i);
+      if (nameMatch) {
+        fields.push(nameMatch[1]);
+      } else if (typeMatch) {
+        fields.push(typeMatch[1]);
+      }
+    }
+    forms.push({ action, method, fields: fields.slice(0, 20) });
+  }
+
+  // Extract library evidence
+  const libraryEvidence: string[] = [];
+  const lowercaseHtml = html.toLowerCase();
+  if (jsUrls.some(u => u.includes('react') || u.includes('/chunks/')) || lowercaseHtml.includes('react-root') || lowercaseHtml.includes('_next/data')) {
+    libraryEvidence.push('React');
+  }
+  if (jsUrls.some(u => u.includes('next.js') || u.includes('_next/static'))) {
+    libraryEvidence.push('Next.js');
+  }
+  if (jsUrls.some(u => u.includes('nuxt') || u.includes('/_nuxt/')) || lowercaseHtml.includes('__nuxt')) {
+    libraryEvidence.push('Nuxt');
+  }
+  if (jsUrls.some(u => u.includes('vue'))) {
+    libraryEvidence.push('Vue');
+  }
+  if (jsUrls.some(u => u.includes('jquery'))) {
+    libraryEvidence.push('jQuery');
+  }
+  if (jsUrls.some(u => u.includes('bootstrap'))) {
+    libraryEvidence.push('Bootstrap');
+  }
+  if (jsUrls.some(u => u.includes('gsap'))) {
+    libraryEvidence.push('GSAP');
+  }
+  if (jsUrls.some(u => u.includes('swiper'))) {
+    libraryEvidence.push('Swiper');
+  }
+  if (jsUrls.some(u => u.includes('three'))) {
+    libraryEvidence.push('Three.js');
+  }
+  if (lowercaseHtml.includes('gtag') || lowercaseHtml.includes('google-analytics')) {
+    libraryEvidence.push('Google Analytics (gtag)');
+  }
+  if (libraryEvidence.length === 0) {
+    libraryEvidence.push('Static HTML site');
+  }
+
+  // Extract navLinks
+  const navLinks: string[] = [];
+  const navRegex = /<nav[^>]*>([\s\S]*?)<\/nav>/gi;
+  let nm;
+  while ((nm = navRegex.exec(html)) !== null) {
+    const navContent = nm[1];
+    const navA = /<a[^>]*>([\s\S]*?)<\/a>/gi;
+    let nam;
+    while ((nam = navA.exec(navContent)) !== null) {
+      const t = stripHtml(decodeHtmlEntities(nam[1]));
+      if (t) navLinks.push(t);
+    }
+  }
+  const uniqNavLinks = [...new Set(navLinks)].slice(0, 30);
+
+  // Extract visibleButtons
+  const visibleButtons: string[] = [];
+  const btnRegex = /<(?:button|a)[^>]+class=["'][^"']*(?:btn|button)[^"']*["'][^>]*>([\s\S]*?)<\/(?:button|a)>/gi;
+  let bm;
+  while ((bm = btnRegex.exec(html)) !== null) {
+    const t = stripHtml(decodeHtmlEntities(bm[1]));
+    if (t && t.length < 50) visibleButtons.push(t);
+  }
+  const rawBtnRegex = /<button[^>]*>([\s\S]*?)<\/button>/gi;
+  while ((bm = rawBtnRegex.exec(html)) !== null) {
+    const t = stripHtml(decodeHtmlEntities(bm[1]));
+    if (t && t.length < 50) visibleButtons.push(t);
+  }
+  const uniqVisibleButtons = [...new Set(visibleButtons)].slice(0, 30);
+
+  // Leaf tag elementSummary
+  const elementSummary: any[] = [];
+  const leafTagRegex = /<([a-zA-Z1-6]+)([^>]*)>([^<]+)<\/\1>/g;
+  let lm;
+  while ((lm = leafTagRegex.exec(html)) !== null) {
+    const tag = lm[1].toLowerCase();
+    if (['script', 'style', 'noscript', 'iframe', 'svg', 'path', 'a', 'span'].includes(tag)) continue;
+    const attrs = lm[2];
+    const text = stripHtml(decodeHtmlEntities(lm[3]));
+    const classMatch = attrs.match(/class=["']([^"']+)["']/i);
+    const className = classMatch ? classMatch[1] : '';
+    if (text && text.length < 100) {
+      elementSummary.push({ tag, text, className });
+    }
+    if (elementSummary.length >= 80) break;
+  }
+
+  // Extract contactInfo
+  const emails: string[] = [];
+  const phones: string[] = [];
+  const addresses: string[] = [];
+  const mailtoMatch = html.matchAll(/href=["']mailto:([^"']+)["']/gi);
+  for (const m of mailtoMatch) {
+    emails.push(m[1].split('?')[0]);
+  }
+  const telMatch = html.matchAll(/href=["']tel:([^"']+)["']/gi);
+  for (const m of telMatch) {
+    phones.push(m[1]);
+  }
+
+  // Extract paragraphs as cardDescriptions
+  const cardDescriptions: string[] = [];
+  const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+  let pm;
+  while ((pm = pRegex.exec(html)) !== null) {
+    const t = stripHtml(decodeHtmlEntities(pm[1]));
+    if (t && t.length > 10 && t.length < 250) {
+      cardDescriptions.push(t);
+    }
+  }
+
+  return {
+    customProperties: {},
+    gradientProperties: {},
+    glowProperties: {},
+    computedStyles: {},
+    colorSamples: [],
+    contactInfo: {
+      emails: [...new Set(emails)],
+      phones: [...new Set(phones)],
+      addresses
+    },
+    htmlRoutes: uniqRoutes,
+    microCopy: [],
+    cardDescriptions: cardDescriptions.slice(0, 20),
+    stats: [],
+    libraryEvidence,
+    headings,
+    navLinks: uniqNavLinks,
+    visibleButtons: uniqVisibleButtons,
+    bodyFont: null,
+    h1Font: null,
+    title,
+    metaDescription,
+    elementSummary,
+    images: uniqImages,
+    hasNavToggle: html.includes('hamburger') || html.includes('menu-toggle') || html.includes('nav-toggle'),
+    filterItems: [],
+    forms,
+    cssUrls,
+    jsUrls,
+    cssTexts,
+  };
+}
+
 export default defineEventHandler(async (event) => {
   const { url } = await readBody(event);
   if (!url) throw createError({ statusCode: 400, message: 'url is required' });
@@ -315,7 +607,7 @@ export default defineEventHandler(async (event) => {
           token: scrapeDoToken,
           url: targetUrl,
           render: 'true',
-          fullScreenShot: 'true',
+          screenShot: 'true',
           returnJSON: 'true',
           width: isMobile ? '390' : '1440',
           height: isMobile ? '844' : '1000',
@@ -338,8 +630,22 @@ export default defineEventHandler(async (event) => {
       try {
         console.log("Scrape.do: Attempting desktop crawl with standard proxies...");
         desktopJson = await scrapeWithDo(false, false);
+
+        // Check if standard crawl got blocked/rendered empty
+        const html = desktopJson.content || '';
+        const desktopMatch = html.match(regex);
+        let domData: any = {};
+        if (desktopMatch && desktopMatch[1]) {
+          try {
+            domData = JSON.parse(desktopMatch[1].trim());
+          } catch {}
+        }
+        const customPropsCount = Object.keys(domData.customProperties || {}).length;
+        if (!domData.title && customPropsCount === 0) {
+          throw new Error("Crawl returned empty title and 0 custom properties (likely blocked or Cloudflare challenged)");
+        }
       } catch (err: any) {
-        console.warn("Scrape.do: Standard desktop crawl failed, retrying with super proxy...", err.message);
+        console.warn("Scrape.do: Standard desktop crawl failed or blocked, retrying with super proxy...", err.message);
         desktopJson = await scrapeWithDo(true, false);
       }
 
@@ -356,6 +662,13 @@ export default defineEventHandler(async (event) => {
         }
       }
 
+      // If Scrape.do DOM data extraction failed (likely due to CSP preventing script injection), fallback to raw HTML parsing
+      const desktopCustomPropsCount = Object.keys(desktopDomData.customProperties || {}).length;
+      if (!desktopDomData.title && desktopCustomPropsCount === 0) {
+        console.log("Scrape.do Desktop: JS extraction empty. Running raw HTML fallback parser...");
+        desktopDomData = parseDataFromHtml(desktopHtml, targetUrl);
+      }
+
       desktop = {
         domData: desktopDomData,
         cssUrls: desktopDomData.cssUrls || [],
@@ -368,8 +681,22 @@ export default defineEventHandler(async (event) => {
       try {
         console.log("Scrape.do: Attempting mobile crawl with standard proxies...");
         mobileJson = await scrapeWithDo(false, true);
+
+        // Check if standard crawl got blocked/rendered empty
+        const html = mobileJson.content || '';
+        const mobileMatch = html.match(regex);
+        let domData: any = {};
+        if (mobileMatch && mobileMatch[1]) {
+          try {
+            domData = JSON.parse(mobileMatch[1].trim());
+          } catch {}
+        }
+        const customPropsCount = Object.keys(domData.customProperties || {}).length;
+        if (!domData.title && customPropsCount === 0) {
+          throw new Error("Crawl returned empty title and 0 custom properties (likely blocked or Cloudflare challenged)");
+        }
       } catch (err: any) {
-        console.warn("Scrape.do: Standard mobile crawl failed, retrying with super proxy...", err.message);
+        console.warn("Scrape.do: Standard mobile crawl failed or blocked, retrying with super proxy...", err.message);
         mobileJson = await scrapeWithDo(true, true);
       }
 
@@ -384,6 +711,13 @@ export default defineEventHandler(async (event) => {
         } catch (e) {
           console.error("Failed to parse Scrape.do Mobile DOM data:", e);
         }
+      }
+
+      // If Scrape.do DOM data extraction failed (likely due to CSP preventing script injection), fallback to raw HTML parsing
+      const mobileCustomPropsCount = Object.keys(mobileDomData.customProperties || {}).length;
+      if (!mobileDomData.title && mobileCustomPropsCount === 0) {
+        console.log("Scrape.do Mobile: JS extraction empty. Running raw HTML fallback parser...");
+        mobileDomData = parseDataFromHtml(mobileHtml, targetUrl);
       }
 
       mobile = {
