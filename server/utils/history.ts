@@ -343,8 +343,7 @@ export function detectFontFamily(item: any): { url: string, family: string, seri
 }
 
 export function generateFallbackSvg(item: any): string {
-  const domain = item.domain || 'domain.com';
-  const cleanTitle = cleanBrandTitle(item.title || 'Design', domain);
+  const domain = (item.domain || 'domain.com').toLowerCase();
   const colors = extractColors(item);
   const fontData = detectFontFamily(item);
 
@@ -354,11 +353,11 @@ export function generateFallbackSvg(item: any): string {
   // Setup text contrast color
   const textColor = isDark ? '#ffffff' : '#18181b';
 
-  // Dynamic font size based on word length
-  let fontSize = 90;
-  if (cleanTitle.length > 8) fontSize = 80;
-  if (cleanTitle.length > 12) fontSize = 64;
-  if (cleanTitle.length > 18) fontSize = 48;
+  // Dynamic font size based on domain length
+  let fontSize = 80;
+  if (domain.length > 12) fontSize = 64;
+  if (domain.length > 18) fontSize = 48;
+  if (domain.length > 24) fontSize = 36;
 
   // Clean key for gradient ID to avoid syntax errors
   const gradKey = domain.replace(/[^a-zA-Z0-9]/g, '');
@@ -389,7 +388,7 @@ export function generateFallbackSvg(item: any): string {
     <!-- Decorative subtle border inside -->
     <rect x="4" y="4" width="1192" height="622" fill="none" stroke="${isDark ? '#ffffff' : '#000000'}" stroke-opacity="0.04" stroke-width="4" />
 
-    <!-- Centered Brand Title -->
+    <!-- Centered Brand Title (Domain name only) -->
     <text 
       x="50%" 
       y="50%" 
@@ -398,6 +397,6 @@ export function generateFallbackSvg(item: any): string {
       alignment-baseline="middle"
       class="brand-title-${gradKey}"
       font-size="${fontSize}"
-    >${cleanTitle}</text>
+    >${domain}</text>
   </svg>`;
 }

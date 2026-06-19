@@ -89,8 +89,8 @@ You MUST return a JSON object with the following keys:
 The SVG must:
 - Have viewBox='0 0 1200 630' (landscape aspect ratio matching the showcase cards).
 - Render a stunning, minimalist typographic card: a smooth, high-end vertical linear gradient background (light white-to-gray for light sites, or dark slate-to-black for dark sites).
-- Place the website's title/logo centered in large, bold typography in the middle (x="50%", y="50%", text-anchor="middle", dominant-baseline="middle").
-- Use the website's actual primary/heading font-family if observed, and color the text with a high-contrast premium color (charcoal black '#18181b' for light cards, white '#ffffff' for dark cards, or a touch of the site's actual brand color).
+- Place the website's domain name (lowercase, e.g., 'harvey.ai', 'reddit.com') centered in large, bold typography in the middle (x="50%", y="50%", text-anchor="middle", dominant-baseline="middle").
+- Use the website's actual primary/heading font-family if observed, and color the text with a high-contrast premium color (charcoal black '#18181b' for light cards, white '#ffffff' for dark cards, or a touch of the site's actual brand color). Do not output any other text, report contents, colors lists, or tables in the SVG visual.
 - Be clean, valid SVG markup (no markdown formatting, no html wrappers, no external font dependencies, valid XML).
 - Use standard SVG tags (linearGradient, rect, text) with inline styling. Do not write complex dashboards, just draw a clean centered typographic layout.`;
 
