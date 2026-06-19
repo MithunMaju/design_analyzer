@@ -79,7 +79,7 @@
       </div>
 
       <!-- History List -->
-      <div v-else class="grid grid-cols-1 gap-4">
+      <div v-else class="grid grid-cols-1 gap-4 max-h-[460px] overflow-y-auto pr-2 custom-scrollbar">
         <div
           v-for="item in filteredHistory"
           :key="item.url"
@@ -197,3 +197,20 @@ async function downloadReport(item: any) {
   }
 }
 </script>
+
+<style scoped>
+/* Custom premium scrollbar for the history container */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e2e2df; /* matches our theme border color */
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #777777; /* matches our theme muted color */
+}
+</style>
