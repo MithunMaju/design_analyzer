@@ -78,7 +78,6 @@ FINAL REMINDERS
 ==================================================
 - Every section must exist, even if short — sparse sections should explain WHY they are sparse (limited evidence) rather than being omitted or padded with filler.
 - Output must be valid Markdown inside the JSON structure.
-- Do NOT embed, show, or output any raw SVG markup, SVG tags, or code blocks containing SVG inside the Markdown report (the "report" key). The Markdown report must be strictly text-based and free of any raw SVG markup.
 
 ==================================================
 OUTPUT FORMAT
