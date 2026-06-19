@@ -8,14 +8,25 @@ export default defineEventHandler(async (event) => {
   // Use a base64url slug of the full URL as a unique, filesystem-safe key
   const key = btoa(body.url).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
+  const reportText = body.report || '';
+  const summary = extractSummary(reportText);
+  const category = inferCategory(
+    body.url,
+    body.title || body.domain || new URL(body.url).hostname,
+    summary,
+    body.result?.curated?.detectedLibraries
+  );
+
   const payload = {
     url: body.url,
     title: body.title || body.domain || new URL(body.url).hostname,
     domain: body.domain || new URL(body.url).hostname,
     date: body.date || new Date().toLocaleDateString(),
     timestamp: body.timestamp || Date.now(),
-    report: body.report || '',
-    result: body.result || null
+    report: reportText,
+    result: body.result || null,
+    summary: summary,
+    category: category
   };
 
   await storage.setItem(key, payload);
