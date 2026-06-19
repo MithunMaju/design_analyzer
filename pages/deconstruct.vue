@@ -2,48 +2,39 @@
   <div class="max-w-5xl mx-auto px-6 py-4">
     <!-- Back to Home Link -->
     <div class="mb-6 flex justify-between items-center">
-      <NuxtLink to="/" class="inline-flex items-center gap-2 text-xs text-neutral-400 hover:text-white uppercase tracking-widest font-mono font-bold transition-colors">
+      <NuxtLink to="/" class="inline-flex items-center gap-2 text-xs text-neutral-500 hover:text-accent-chrono uppercase tracking-widest font-mono font-bold transition-colors">
         <span>← Back to Home</span>
       </NuxtLink>
     </div>
 
     <!-- Combined Hero and URL Input Container -->
-    <div id="deconstruct" class="relative w-full border border-white/10 bg-black rounded-2xl overflow-hidden mb-16 min-h-[380px] shadow-2xl">
-      <!-- Black background image -->
-      <div class="absolute inset-0 z-0 pointer-events-none">
-        <img
-          src="~/public/images/black_hero.jpg"
-          alt="Design Analyzer background"
-          class="h-full w-full object-cover"
-        />
-      </div>
-
+    <div id="deconstruct" class="relative w-full border border-neutral-200/60 bg-neutral-50/50 rounded-3xl overflow-hidden mb-16 min-h-[380px] shadow-sm">
       <!-- Left side (foreground details and input) -->
       <div class="w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-between relative z-10 min-h-[380px]">
         <div>
-          <span class="font-display text-[9px] text-neutral-400 uppercase tracking-widest font-semibold block mb-4">Pipeline Status: Online</span>
-          <h1 class="text-4xl md:text-5xl font-display font-bold text-white leading-tight mt-2 mb-6 uppercase tracking-wide">
+          <span class="font-display text-[9px] text-accent-chrono uppercase tracking-widest font-bold block mb-4">Pipeline Status: Online</span>
+          <h1 class="text-4xl md:text-5xl font-display font-extrabold text-neutral-900 leading-tight mt-2 mb-6 uppercase tracking-wide">
             design analyzer
           </h1>
-          <p class="text-neutral-300 font-sans text-xs leading-relaxed max-w-md mb-8">
+          <p class="text-neutral-600 font-sans text-xs leading-relaxed max-w-md mb-8">
             Deep bundle deconstruction extracts real custom properties, routes, and libraries from live website CSS/JS. Real data, no deceptions.
           </p>
         </div>
         
         <div class="w-full mt-4">
-          <span class="font-display text-[10px] text-white/90 font-bold uppercase tracking-widest block mb-2 font-semibold">Target URL to Analyze</span>
+          <span class="font-display text-[10px] text-neutral-900 font-bold uppercase tracking-widest block mb-2 font-semibold">Target URL to Analyze</span>
           <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end w-full">
             <input
               v-model="url"
               type="url"
               placeholder="https://linear.app"
-              class="flex-1 h-12 bg-transparent border border-white rounded-lg px-4 text-white placeholder-neutral-500 font-mono text-sm focus:outline-none transition-colors"
+              class="flex-1 h-12 bg-white border border-neutral-300 rounded-lg px-4 text-neutral-900 placeholder-neutral-400 font-mono text-sm focus:border-accent-chrono/50 focus:outline-none transition-colors"
               @keydown.enter="analyze"
             />
             <button
               @click="analyze"
               :disabled="loading || !url"
-              class="px-8 h-12 bg-white hover:bg-neutral-200 disabled:opacity-60 text-black font-display font-bold text-xs uppercase tracking-widest shadow-[3px_3px_0px_#333] rounded-lg transition-all whitespace-nowrap"
+              class="px-8 h-12 bg-neutral-950 hover:bg-accent-chrono text-white font-display font-bold text-xs uppercase tracking-widest shadow-xl shadow-black/10 hover:shadow-accent-chrono/20 rounded-lg transition-all whitespace-nowrap"
             >
               {{ loading ? 'Analyzing...' : 'Deconstruct' }}
             </button>
@@ -53,38 +44,38 @@
     </div>
 
     <!-- Progress / Status -->
-    <div v-if="loading" class="bg-black border border-white/10 rounded-2xl p-6 mb-16 shadow-2xl">
+    <div v-if="loading" class="bg-neutral-50/50 border border-neutral-200/60 rounded-3xl p-6 mb-16 shadow-sm">
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></div>
-        <span class="font-display text-[10px] text-white uppercase tracking-widest font-bold">{{ statusMsg }}</span>
+        <div class="w-1.5 h-1.5 rounded-full bg-accent-chrono animate-ping"></div>
+        <span class="font-display text-[10px] text-neutral-900 uppercase tracking-widest font-bold">{{ statusMsg }}</span>
       </div>
-      <div class="w-full bg-neutral-800 h-1 rounded-full overflow-hidden">
+      <div class="w-full bg-neutral-200 h-1 rounded-full overflow-hidden">
         <div
-          class="bg-white h-1 transition-all duration-500"
+          class="bg-accent-chrono h-1 transition-all duration-500"
           :style="{ width: `${progress}%` }"
         ></div>
       </div>
     </div>
 
     <!-- Error -->
-    <div v-if="error" class="bg-black border border-white/10 rounded-2xl p-6 mb-16 text-left shadow-2xl">
-      <p class="font-display text-[10px] text-neutral-400 uppercase tracking-widest font-bold mb-2">Extraction Error</p>
-      <p class="text-white font-mono text-xs">{{ error }}</p>
+    <div v-if="error" class="bg-red-50 border border-red-200/80 rounded-2xl p-6 mb-16 text-left shadow-sm">
+      <p class="font-display text-[10px] text-red-800 uppercase tracking-widest font-bold mb-2">Extraction Error</p>
+      <p class="text-red-700 font-mono text-xs">{{ error }}</p>
     </div>
 
     <!-- Results section (The House Blend) -->
-    <div v-if="result" class="space-y-10 border-t border-theme-border pt-16 mb-20" id="results">
+    <div v-if="result" class="space-y-10 border-t border-neutral-200 pt-16 mb-20" id="results">
       <div class="flex flex-col md:flex-row md:items-end justify-between mb-8">
         <div>
-          <span class="font-display text-[9px] text-neutral-400 uppercase tracking-widest font-semibold block mb-2">Analysis Results</span>
-          <h2 class="font-display font-bold text-2xl uppercase tracking-wider text-white">The House Blend.</h2>
+          <span class="font-display text-[9px] text-neutral-500 uppercase tracking-widest font-semibold block mb-2">Analysis Results</span>
+          <h2 class="font-display font-extrabold text-2xl uppercase tracking-wider text-neutral-900">The House Blend</h2>
         </div>
         <!-- Cached badge -->
         <div class="flex gap-2 items-center">
-          <div v-if="result.cached" class="mt-4 md:mt-0 font-mono text-[9px] text-neutral-400 border border-white/10 px-3 py-1 uppercase tracking-wider">
+          <div v-if="result.cached" class="mt-4 md:mt-0 font-mono text-[9px] text-neutral-500 border border-neutral-200 px-3 py-1 uppercase tracking-wider">
             Served from cache — instant load
           </div>
-          <div v-else-if="loadedFromLocalHistory" class="mt-4 md:mt-0 font-mono text-[9px] text-neutral-400 border border-white/10 px-3 py-1 uppercase tracking-wider">
+          <div v-else-if="loadedFromLocalHistory" class="mt-4 md:mt-0 font-mono text-[9px] text-neutral-500 border border-neutral-200 px-3 py-1 uppercase tracking-wider">
             Loaded from shared cache — instant load
           </div>
         </div>
@@ -101,14 +92,14 @@
       <!-- Screenshots -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <!-- Desktop Screenshot Card -->
-        <div class="bg-[#0d0d0e]/80 backdrop-blur-md border border-white/10 p-3 rounded-2xl overflow-hidden shadow-md flex flex-col h-[600px]">
-          <div class="px-3 py-2 border-b border-white/10 flex justify-between items-center flex-shrink-0">
+        <div class="bg-white border border-neutral-200/80 p-3 rounded-2xl overflow-hidden shadow-sm flex flex-col h-[600px]">
+          <div class="px-3 py-2 border-b border-neutral-100 flex justify-between items-center flex-shrink-0">
             <div class="flex gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full bg-red-400/80"></span>
               <span class="w-2.5 h-2.5 rounded-full bg-yellow-400/80"></span>
               <span class="w-2.5 h-2.5 rounded-full bg-green-400/80"></span>
             </div>
-            <span class="font-display text-[9px] text-neutral-400 uppercase tracking-wider font-semibold">Desktop (1440px)</span>
+            <span class="font-display text-[9px] text-neutral-500 uppercase tracking-wider font-semibold">Desktop (1440px)</span>
           </div>
           <div v-if="result.screenshot" class="flex-1 overflow-x-hidden overflow-y-auto mt-2 rounded-lg screenshot-viewport">
             <img
@@ -117,27 +108,27 @@
               class="w-full block h-auto object-cover object-top"
             />
           </div>
-          <div v-else class="flex-1 flex flex-col items-center justify-center p-8 text-center bg-neutral-900/40 mt-2 rounded-lg border border-dashed border-white/10">
-            <svg class="w-10 h-10 text-neutral-400/50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div v-else class="flex-1 flex flex-col items-center justify-center p-8 text-center bg-neutral-50 mt-2 rounded-lg border border-dashed border-neutral-200">
+            <svg class="w-10 h-10 text-neutral-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <p class="font-display text-[10px] text-white uppercase tracking-widest font-bold mb-2">Screenshot Skipped</p>
-            <p class="text-[11px] text-neutral-400 max-w-[240px] leading-relaxed">
+            <p class="font-display text-[10px] text-neutral-800 uppercase tracking-widest font-bold mb-2">Screenshot Skipped</p>
+            <p class="text-[11px] text-neutral-500 max-w-[240px] leading-relaxed">
               Target site has heavy media load times or security challenges causing the screenshot proxy step to be omitted to prioritize data/custom property extraction.
             </p>
           </div>
         </div>
 
         <!-- Mobile Screenshot Card -->
-        <div class="bg-[#0d0d0e]/80 backdrop-blur-md border border-white/10 p-3 rounded-2xl overflow-hidden shadow-md flex flex-col h-[600px]">
-          <div class="px-3 py-2 border-b border-white/10 flex justify-between items-center flex-shrink-0">
+        <div class="bg-white border border-neutral-200/80 p-3 rounded-2xl overflow-hidden shadow-sm flex flex-col h-[600px]">
+          <div class="px-3 py-2 border-b border-neutral-100 flex justify-between items-center flex-shrink-0">
             <div class="flex gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full bg-red-400/80"></span>
               <span class="w-2.5 h-2.5 rounded-full bg-yellow-400/80"></span>
               <span class="w-2.5 h-2.5 rounded-full bg-green-400/80"></span>
             </div>
-            <span class="font-display text-[9px] text-neutral-400 uppercase tracking-wider font-semibold">Mobile (390px)</span>
+            <span class="font-display text-[9px] text-neutral-500 uppercase tracking-wider font-semibold">Mobile (390px)</span>
           </div>
           <div v-if="result.mobileScreenshot" class="flex-1 overflow-x-hidden overflow-y-auto mt-2 rounded-lg screenshot-viewport">
             <img
@@ -146,12 +137,12 @@
               class="w-full block h-auto object-cover object-top"
             />
           </div>
-          <div v-else class="flex-1 flex flex-col items-center justify-center p-8 text-center bg-neutral-900/40 mt-2 rounded-lg border border-dashed border-white/10">
-            <svg class="w-10 h-10 text-neutral-400/50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div v-else class="flex-1 flex flex-col items-center justify-center p-8 text-center bg-neutral-50 mt-2 rounded-lg border border-dashed border-neutral-200">
+            <svg class="w-10 h-10 text-neutral-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
-            <p class="font-display text-[10px] text-white uppercase tracking-widest font-bold mb-2">Screenshot Skipped</p>
-            <p class="text-[11px] text-neutral-400 max-w-[240px] leading-relaxed">
+            <p class="font-display text-[10px] text-neutral-800 uppercase tracking-widest font-bold mb-2">Screenshot Skipped</p>
+            <p class="text-[11px] text-neutral-500 max-w-[240px] leading-relaxed">
               Target site has heavy media load times or security challenges causing the screenshot proxy step to be omitted to prioritize data/custom property extraction.
             </p>
           </div>
@@ -159,8 +150,9 @@
       </div>
 
       <!-- Tab Details Card -->
-      <div class="border border-white/10 bg-[#0d0d0e]/80 backdrop-blur-md rounded-2xl overflow-hidden mt-12 shadow-md">
-        <div class="flex border-b border-white/10 bg-[#0d0d0e] overflow-x-auto">
+      <!-- Tab Details Card -->
+      <div class="border border-neutral-200/60 bg-neutral-50/50 rounded-3xl overflow-hidden mt-12 shadow-sm">
+        <div class="flex border-b border-neutral-200/60 bg-neutral-100/50 overflow-x-auto">
           <TabBtn
             v-for="tab in tabs"
             :key="tab.id"
@@ -174,59 +166,59 @@
           <!-- Report Tab -->
           <div v-if="activeTab === 'report'">
             <div v-if="reportLoading" class="flex items-center gap-3 py-12 justify-center">
-              <div class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></div>
-              <span class="font-display text-[10px] text-neutral-400 uppercase tracking-widest font-semibold">Synthesizing design report...</span>
+              <div class="w-1.5 h-1.5 rounded-full bg-accent-chrono animate-ping"></div>
+              <span class="font-display text-[10px] text-neutral-600 uppercase tracking-widest font-semibold">Synthesizing design report...</span>
             </div>
             <div v-else-if="report">
               <div class="flex justify-end gap-2 mb-6">
                 <button
                   @click="copyReport"
-                  class="px-4 py-2 bg-white hover:bg-neutral-200 text-black font-display text-[9px] uppercase tracking-widest shadow-sm transition-colors"
+                  class="px-4 py-2 bg-neutral-950 hover:bg-accent-chrono text-white font-display text-[9px] uppercase tracking-widest rounded-lg shadow-md shadow-black/5 transition-all"
                 >
                   {{ copied ? 'Copied!' : 'Copy Markdown' }}
                 </button>
                 <button
                   @click="downloadReport"
-                  class="px-4 py-2 bg-white hover:bg-neutral-200 text-black font-display text-[9px] uppercase tracking-widest shadow-sm transition-colors"
+                  class="px-4 py-2 bg-neutral-950 hover:bg-accent-chrono text-white font-display text-[9px] uppercase tracking-widest rounded-lg shadow-md shadow-black/5 transition-all"
                 >
                   Download .md
                 </button>
               </div>
               <div
-                class="prose prose-sm max-w-none text-white prose-invert"
+                class="prose prose-sm max-w-none text-neutral-800"
                 v-html="renderedReport"
               ></div>
             </div>
             <div v-else class="text-center py-12">
               <button
                 @click="generateReport"
-                class="px-8 py-3 bg-white hover:bg-neutral-200 text-black font-display text-[10px] uppercase tracking-widest shadow-sm transition-colors"
+                class="px-8 py-3 bg-neutral-950 hover:bg-accent-chrono text-white font-display text-[10px] uppercase tracking-widest rounded-lg shadow-md shadow-black/5 transition-all"
               >
                 Generate Report with Gemini
               </button>
-              <p class="text-neutral-400 text-[10px] mt-3 uppercase font-mono tracking-wider">Uses Gemini API — free tier</p>
+              <p class="text-neutral-500 text-[10px] mt-3 uppercase font-mono tracking-wider">Uses Gemini API — free tier</p>
               <p v-if="reportError" class="text-red-600 font-mono text-xs mt-3">{{ reportError }}</p>
             </div>
           </div>
 
           <!-- Custom Properties tab -->
           <div v-if="activeTab === 'tokens'" class="space-y-3">
-            <p class="font-display text-[10px] text-neutral-400 uppercase tracking-widest mb-4 border-b border-white/10 pb-2">
+            <p class="font-display text-[10px] text-neutral-500 uppercase tracking-widest mb-4 border-b border-neutral-200/60 pb-2">
               {{ result.curated.customProperties.length }} custom variables extracted
             </p>
-            <div class="divide-y divide-white/10">
+            <div class="divide-y divide-neutral-200/60">
               <div
                 v-for="prop in result.curated.customProperties"
                 :key="prop.name"
                 class="flex items-center gap-3 py-3 px-1"
               >
                 <ColorSwatch :value="prop.value" />
-                <span class="font-mono text-xs text-white font-medium">{{ prop.name }}</span>
-                <span class="font-mono text-xs text-neutral-400 ml-auto">{{ prop.value }}</span>
-                <span class="font-mono text-[9px] text-neutral-400/60 pl-2 uppercase tracking-wider">{{ prop.source }}</span>
+                <span class="font-mono text-xs text-neutral-900 font-medium">{{ prop.name }}</span>
+                <span class="font-mono text-xs text-neutral-500 ml-auto">{{ prop.value }}</span>
+                <span class="font-mono text-[9px] text-neutral-400 pl-2 uppercase tracking-wider">{{ prop.source }}</span>
               </div>
             </div>
-            <p v-if="!result.curated.customProperties.length" class="text-neutral-400 text-xs font-mono">No custom properties detected</p>
+            <p v-if="!result.curated.customProperties.length" class="text-neutral-500 text-xs font-mono">No custom properties detected</p>
           </div>
 
           <!-- Libraries tab -->
@@ -236,33 +228,33 @@
             </p>
             
             <div v-if="result.curated.detectedLibraries?.domConfirmed?.length" class="mb-4">
-              <p class="font-display text-[10px] text-neutral-400 uppercase tracking-widest mb-2">Confirmed (Runtime DOM Globals)</p>
+              <p class="font-display text-[10px] text-neutral-500 uppercase tracking-widest mb-2">Confirmed (Runtime DOM Globals)</p>
               <div class="flex flex-wrap gap-2">
-                <span v-for="lib in result.curated.detectedLibraries.domConfirmed" :key="lib" class="px-3 py-1 bg-neutral-800 text-white font-mono text-xs rounded border border-white/5">{{ lib }}</span>
+                <span v-for="lib in result.curated.detectedLibraries.domConfirmed" :key="lib" class="px-3 py-1 bg-neutral-100 text-neutral-800 font-mono text-xs rounded border border-neutral-200">{{ lib }}</span>
               </div>
             </div>
 
             <div v-if="result.curated.detectedLibraries?.scriptConfirmed?.length" class="mb-4">
-              <p class="font-display text-[10px] text-neutral-400 uppercase tracking-widest mb-2">Confirmed (Script Filenames)</p>
+              <p class="font-display text-[10px] text-neutral-500 uppercase tracking-widest mb-2">Confirmed (Script Filenames)</p>
               <div class="flex flex-wrap gap-2">
-                <span v-for="lib in result.curated.detectedLibraries.scriptConfirmed" :key="lib" class="px-3 py-1 bg-neutral-900 border border-white/10 text-white font-mono text-xs rounded">{{ lib }}</span>
+                <span v-for="lib in result.curated.detectedLibraries.scriptConfirmed" :key="lib" class="px-3 py-1 bg-white border border-neutral-200 text-neutral-800 font-mono text-xs rounded">{{ lib }}</span>
               </div>
             </div>
 
             <div v-if="result.curated.detectedLibraries?.bundleHints?.length">
-              <p class="font-display text-[10px] text-neutral-400 uppercase tracking-widest mb-2">Bundle hints (unconfirmed)</p>
+              <p class="font-display text-[10px] text-neutral-500 uppercase tracking-widest mb-2">Bundle hints (unconfirmed)</p>
               <div class="flex flex-wrap gap-2">
-                <span v-for="lib in result.curated.detectedLibraries.bundleHints" :key="lib" class="px-3 py-1 bg-neutral-900 border border-white/10 text-neutral-400 font-mono text-xs rounded">{{ lib }}</span>
+                <span v-for="lib in result.curated.detectedLibraries.bundleHints" :key="lib" class="px-3 py-1 bg-white border border-neutral-200 text-neutral-500 font-mono text-xs rounded">{{ lib }}</span>
               </div>
             </div>
 
             <div v-if="result.curated.fonts.length" class="mt-6">
-              <p class="font-display text-[10px] text-neutral-400 uppercase tracking-widest mb-3">Google Fonts</p>
+              <p class="font-display text-[10px] text-neutral-500 uppercase tracking-widest mb-3">Google Fonts</p>
               <div class="flex flex-wrap gap-2">
                 <span
                   v-for="font in result.curated.fonts"
                   :key="font"
-                  class="px-3 py-1 bg-neutral-900 border border-white/10 text-white font-mono text-xs rounded"
+                  class="px-3 py-1 bg-white border border-neutral-200 text-neutral-800 font-mono text-xs rounded"
                 >
                   {{ font }}
                 </span>
@@ -272,31 +264,31 @@
 
           <!-- Routes tab -->
           <div v-if="activeTab === 'routes'" class="space-y-6">
-            <p class="font-display text-[10px] text-neutral-400 uppercase tracking-widest mb-4 border-b border-white/10 pb-2">
+            <p class="font-display text-[10px] text-neutral-500 uppercase tracking-widest mb-4 border-b border-neutral-200/60 pb-2">
               Route paths & api bindings
             </p>
             
-            <div class="bg-neutral-900 border border-white/10 p-4 rounded-xl">
-              <p class="font-display text-[10px] text-white uppercase tracking-widest mb-3 font-semibold">Application Routes</p>
-              <div class="max-h-60 overflow-y-auto divide-y divide-white/10 pr-2">
+            <div class="bg-white border border-neutral-200 p-4 rounded-xl">
+              <p class="font-display text-[10px] text-neutral-800 uppercase tracking-widest mb-3 font-semibold">Application Routes</p>
+              <div class="max-h-60 overflow-y-auto divide-y divide-neutral-100 pr-2">
                 <div
                   v-for="route in result.curated.routes"
                   :key="route"
-                  class="py-2 font-mono text-xs text-white"
+                  class="py-2 font-mono text-xs text-neutral-800"
                 >
                   {{ route }}
                 </div>
               </div>
-              <p v-if="!result.curated.routes.length" class="text-neutral-400 text-xs font-mono">No routes extracted</p>
+              <p v-if="!result.curated.routes.length" class="text-neutral-500 text-xs font-mono">No routes extracted</p>
             </div>
 
-            <div v-if="result.curated.apiEndpoints.length" class="bg-neutral-900 border border-white/10 p-4 rounded-xl">
-              <p class="font-display text-[10px] text-white uppercase tracking-widest mb-3 font-semibold">API Endpoints</p>
-              <div class="max-h-60 overflow-y-auto divide-y divide-white/10 pr-2">
+            <div v-if="result.curated.apiEndpoints.length" class="bg-white border border-neutral-200 p-4 rounded-xl">
+              <p class="font-display text-[10px] text-neutral-800 uppercase tracking-widest mb-3 font-semibold">API Endpoints</p>
+              <div class="max-h-60 overflow-y-auto divide-y divide-neutral-100 pr-2">
                 <div
                   v-for="ep in result.curated.apiEndpoints"
                   :key="ep"
-                  class="py-2 font-mono text-xs text-white break-all"
+                  class="py-2 font-mono text-xs text-neutral-800 break-all"
                 >
                   {{ ep }}
                 </div>
@@ -306,23 +298,23 @@
 
           <!-- Tailwind tab -->
           <div v-if="activeTab === 'tailwind'" class="space-y-6">
-            <div v-if="result.curated.tailwindVersion" class="inline-flex items-center px-3 py-1 bg-neutral-800 text-white text-xs font-mono rounded border border-white/5">
+            <div v-if="result.curated.tailwindVersion" class="inline-flex items-center px-3 py-1 bg-accent-chrono/10 text-accent-chrono text-xs font-mono rounded border border-accent-chrono/20">
               {{ result.curated.tailwindVersion }}
             </div>
-            <p v-else class="text-neutral-400 text-xs font-mono">No Tailwind framework detected</p>
+            <p v-else class="text-neutral-500 text-xs font-mono">No Tailwind framework detected</p>
 
             <div
               v-for="(values, bucket) in result.curated.tailwindArbitraryValues"
               :key="bucket"
-              class="border border-white/10 p-4 rounded-xl"
+              class="border border-neutral-200 p-4 rounded-xl"
             >
               <div v-if="values.length">
-                <p class="font-display text-[10px] text-white uppercase tracking-widest mb-2 font-semibold">{{ bucket }}</p>
+                <p class="font-display text-[10px] text-neutral-800 uppercase tracking-widest mb-2 font-semibold">{{ bucket }}</p>
                 <div class="flex flex-wrap gap-2">
                   <span
                     v-for="val in values"
                     :key="val"
-                    class="px-2.5 py-1 bg-neutral-800 border border-white/10 text-white font-mono text-xs rounded"
+                    class="px-2.5 py-1 bg-neutral-100 border border-neutral-200 text-neutral-800 font-mono text-xs rounded"
                   >
                     {{ val }}
                   </span>
@@ -331,24 +323,24 @@
             </div>
 
             <!-- Fallbacks -->
-            <div v-if="!result.curated.tailwindArbitraryValues.colors?.length && result.curated.domEvidence?.desktop?.colorSamples?.length" class="border border-white/10 p-4 rounded-xl">
-              <p class="font-display text-[10px] text-white uppercase tracking-widest mb-3 font-semibold">Rendered Color Samples</p>
+            <div v-if="!result.curated.tailwindArbitraryValues.colors?.length && result.curated.domEvidence?.desktop?.colorSamples?.length" class="border border-neutral-200 p-4 rounded-xl">
+              <p class="font-display text-[10px] text-neutral-800 uppercase tracking-widest mb-3 font-semibold">Rendered Color Samples</p>
               <div class="flex flex-wrap gap-4">
                 <div
                   v-for="color in result.curated.domEvidence.desktop.colorSamples"
                   :key="color"
-                  class="flex items-center gap-2 px-2 py-1 bg-neutral-800 border border-white/10 rounded"
+                  class="flex items-center gap-2 px-2 py-1 bg-neutral-100 border border-neutral-200 rounded"
                 >
-                  <div class="w-5 h-5 border border-white/20" :style="{ background: color }"></div>
-                  <span class="font-mono text-xs text-white">{{ color }}</span>
+                  <div class="w-5 h-5 border border-neutral-300" :style="{ background: color }"></div>
+                  <span class="font-mono text-xs text-neutral-800">{{ color }}</span>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Raw JSON tab -->
-          <div v-if="activeTab === 'raw'" class="bg-neutral-900 p-4 border border-white/10 rounded-xl overflow-hidden">
-            <pre class="text-xs font-mono text-neutral-400 overflow-auto max-h-[600px] whitespace-pre-wrap pr-2">{{ JSON.stringify(result.curated, null, 2) }}</pre>
+          <div v-if="activeTab === 'raw'" class="bg-white border border-neutral-200 p-4 rounded-xl overflow-hidden">
+            <pre class="text-xs font-mono text-neutral-600 overflow-auto max-h-[600px] whitespace-pre-wrap pr-2">{{ JSON.stringify(result.curated, null, 2) }}</pre>
           </div>
         </div>
       </div>
@@ -357,6 +349,10 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  layout: 'light'
+});
+
 import { marked } from 'marked';
 
 const url = ref('');

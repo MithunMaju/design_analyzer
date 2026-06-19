@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-5xl mx-auto px-6 py-4">
     <!-- Header in ChronoTask style (logo only, links and actions removed) -->
-    <header class="flex items-center justify-between py-6 mb-12 border-b border-neutral-100 relative z-10">
+    <header class="reveal-item flex items-center justify-between py-6 mb-12 border-b border-neutral-100 relative z-10">
       <div class="flex items-center gap-2">
         <!-- Custom ChronoTask check/clock-style SVG Icon in plum/magenta -->
         <svg class="w-5 h-5 text-accent-chrono" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -17,24 +17,19 @@
       <!-- Left side: Headline and CTAs -->
       <div class="w-full lg:w-3/5 flex flex-col justify-center min-h-[320px] relative z-10">
         <div class="space-y-4">
-          <div class="inline-flex items-center gap-2 px-3 py-1 bg-accent-chrono/10 text-accent-chrono rounded-full border border-accent-chrono/20">
-            <span class="w-1.5 h-1.5 rounded-full bg-accent-chrono animate-pulse"></span>
-            <span class="font-mono text-[8px] uppercase tracking-widest font-bold">PIPELINE STATUS: ONLINE</span>
-          </div>
-          
-          <h1 class="text-4xl md:text-5xl font-display font-extrabold text-neutral-900 leading-tight uppercase tracking-wide">
+          <h1 class="reveal-item reveal-delay-1 text-4xl md:text-5xl font-display font-extrabold text-neutral-900 leading-tight uppercase tracking-wide">
             design analyzer
             <span class="text-accent-chrono block text-xl md:text-2xl mt-3 font-normal font-sans tracking-normal capitalize text-neutral-500">
               Your essential tool for design system deconstruction
             </span>
           </h1>
           
-          <p class="text-neutral-600 font-sans text-xs leading-relaxed max-w-lg pt-2">
+          <p class="reveal-item reveal-delay-2 text-neutral-600 font-sans text-xs leading-relaxed max-w-lg pt-2">
             Deep-extract CSS variables, Tailwind tokens, application routing paths, and dependency packages directly from live browser bundles. Clean evidence, parsed in real-time, refined by Gemini AI.
           </p>
         </div>
         
-        <div class="w-full mt-8 flex flex-wrap gap-4">
+        <div class="reveal-item reveal-delay-3 w-full mt-8 flex flex-wrap gap-4">
           <NuxtLink
             to="/deconstruct"
             class="inline-flex items-center justify-center px-8 h-12 bg-neutral-950 hover:bg-accent-chrono text-white font-display font-bold text-xs uppercase tracking-widest rounded-xl transition-all shadow-xl shadow-black/10 hover:shadow-accent-chrono/20 whitespace-nowrap"
@@ -51,7 +46,7 @@
       </div>
 
       <!-- Right side: Floating Mockup Preview (ChronoTask Time Tracker / Analysis Active Mockup - Light Mode) -->
-      <div class="hidden lg:flex items-center justify-center lg:w-2/5 relative z-10">
+      <div class="reveal-item reveal-delay-4 hidden lg:flex items-center justify-center lg:w-2/5 relative z-10">
         <!-- Floating ambient glowing backdrops -->
         <div class="absolute w-64 h-64 bg-accent-chrono/5 rounded-full blur-3xl -top-10 -right-10 pointer-events-none"></div>
         <div class="absolute w-48 h-48 bg-indigo-500/5 rounded-full blur-3xl -bottom-10 -left-10 pointer-events-none"></div>
@@ -136,7 +131,7 @@
 
     <!-- Capabilities Grid Section -->
     <div id="capabilities" class="mb-24 scroll-mt-12">
-      <div class="text-center max-w-xl mx-auto mb-16">
+      <div class="reveal-item text-center max-w-xl mx-auto mb-16">
         <span class="font-display text-[9px] text-accent-chrono uppercase tracking-widest font-bold block mb-2">Capabilities</span>
         <h2 class="font-display font-extrabold text-2xl uppercase tracking-wider text-neutral-900">Reverse Engineering Kit</h2>
         <p class="text-neutral-500 text-xs font-sans mt-2 leading-relaxed">Dissect, inspect, and analyze any modern web framework design system instantly.</p>
@@ -144,7 +139,7 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Feature 1 -->
-        <div class="bg-neutral-50/50 border border-neutral-200/60 hover:border-accent-chrono/30 hover:bg-white p-6 rounded-2xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 duration-300">
+        <div class="reveal-item reveal-delay-1 bg-neutral-50/50 border border-neutral-200/60 hover:border-accent-chrono/30 hover:bg-white p-6 rounded-2xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 duration-300">
           <div class="w-8 h-8 rounded-xl bg-accent-chrono/10 flex items-center justify-center mb-4 text-accent-chrono">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
@@ -157,7 +152,7 @@
         </div>
 
         <!-- Feature 2 -->
-        <div class="bg-neutral-50/50 border border-neutral-200/60 hover:border-accent-chrono/30 hover:bg-white p-6 rounded-2xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 duration-300">
+        <div class="reveal-item reveal-delay-2 bg-neutral-50/50 border border-neutral-200/60 hover:border-accent-chrono/30 hover:bg-white p-6 rounded-2xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 duration-300">
           <div class="w-8 h-8 rounded-xl bg-accent-chrono/10 flex items-center justify-center mb-4 text-accent-chrono">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
@@ -170,7 +165,7 @@
         </div>
 
         <!-- Feature 3 -->
-        <div class="bg-neutral-50/50 border border-neutral-200/60 hover:border-accent-chrono/30 hover:bg-white p-6 rounded-2xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 duration-300">
+        <div class="reveal-item reveal-delay-3 bg-neutral-50/50 border border-neutral-200/60 hover:border-accent-chrono/30 hover:bg-white p-6 rounded-2xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 duration-300">
           <div class="w-8 h-8 rounded-xl bg-accent-chrono/10 flex items-center justify-center mb-4 text-accent-chrono">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -183,7 +178,7 @@
         </div>
 
         <!-- Feature 4 -->
-        <div class="bg-neutral-50/50 border border-neutral-200/60 hover:border-accent-chrono/30 hover:bg-white p-6 rounded-2xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 duration-300">
+        <div class="reveal-item reveal-delay-4 bg-neutral-50/50 border border-neutral-200/60 hover:border-accent-chrono/30 hover:bg-white p-6 rounded-2xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 duration-300">
           <div class="w-8 h-8 rounded-xl bg-accent-chrono/10 flex items-center justify-center mb-4 text-accent-chrono">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -198,18 +193,18 @@
     </div>
 
     <!-- Workflow Section -->
-    <div id="workflow" class="mb-24 bg-neutral-50/80 border border-neutral-200/60 rounded-2xl p-8 md:p-10 relative overflow-hidden shadow-sm scroll-mt-12">
+    <div id="workflow" class="reveal-item mb-24 bg-neutral-50/80 border border-neutral-200/60 rounded-2xl p-8 md:p-10 relative overflow-hidden shadow-sm scroll-mt-12">
       <!-- Faint decorative gradient dot -->
       <div class="absolute w-32 h-32 bg-accent-chrono/5 rounded-full blur-2xl top-0 right-0 pointer-events-none"></div>
       
-      <div class="relative z-10 text-center max-w-xl mx-auto mb-12">
+      <div class="reveal-item reveal-delay-1 relative z-10 text-center max-w-xl mx-auto mb-12">
         <span class="font-display text-[9px] text-accent-chrono uppercase tracking-widest block mb-2 font-bold">The Pipeline</span>
         <h2 class="font-display font-extrabold text-xl uppercase tracking-wider text-neutral-900">How Deconstruction Works</h2>
       </div>
 
       <div class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8">
         <!-- Step 1 -->
-        <div class="space-y-3 relative group">
+        <div class="reveal-item reveal-delay-2 space-y-3 relative group">
           <div class="flex items-center gap-2">
             <span class="font-mono text-[9px] text-accent-chrono font-bold uppercase tracking-wider bg-accent-chrono/10 px-2 py-0.5 rounded">Step 01</span>
             <span class="h-px bg-neutral-200 flex-1 hidden md:block"></span>
@@ -221,7 +216,7 @@
         </div>
 
         <!-- Step 2 -->
-        <div class="space-y-3 relative group">
+        <div class="reveal-item reveal-delay-3 space-y-3 relative group">
           <div class="flex items-center gap-2">
             <span class="font-mono text-[9px] text-accent-chrono font-bold uppercase tracking-wider bg-accent-chrono/10 px-2 py-0.5 rounded">Step 02</span>
             <span class="h-px bg-neutral-200 flex-1 hidden md:block"></span>
@@ -233,7 +228,7 @@
         </div>
 
         <!-- Step 3 -->
-        <div class="space-y-3 relative">
+        <div class="reveal-item reveal-delay-4 space-y-3 relative">
           <div class="flex items-center gap-2">
             <span class="font-mono text-[9px] text-accent-chrono font-bold uppercase tracking-wider bg-accent-chrono/10 px-2 py-0.5 rounded">Step 03</span>
             <span class="h-px bg-transparent flex-1"></span>
@@ -247,7 +242,7 @@
     </div>
 
     <!-- History Section (Shared Repository Ledger) -->
-    <div id="ledger-gallery" class="bg-neutral-50/50 border border-neutral-200/60 rounded-3xl p-6 md:p-8 shadow-sm mb-16 scroll-mt-12 space-y-6">
+    <div id="ledger-gallery" class="reveal-item bg-neutral-50/50 border border-neutral-200/60 rounded-3xl p-6 md:p-8 shadow-sm mb-16 scroll-mt-12 space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-200/60 pb-6">
         <div>
           <span class="font-display text-[9px] text-accent-chrono uppercase tracking-widest font-bold block mb-1">Crawl Repository</span>
@@ -456,6 +451,23 @@ onMounted(() => {
     } else {
       userDeconstructedUrls.value = [];
     }
+
+    // Initialize Intersection Observer for scroll-reveal animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.05,
+      rootMargin: '0px 0px -30px 0px'
+    });
+
+    document.querySelectorAll('.reveal-item').forEach((el) => {
+      observer.observe(el);
+    });
   }
 });
 
@@ -642,4 +654,26 @@ html {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #a1a1aa;
 }
+
+/* Premium Reveal Animations */
+.reveal-item {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.reveal-item.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered transition delays */
+.reveal-delay-1 { transition-delay: 100ms; }
+.reveal-delay-2 { transition-delay: 200ms; }
+.reveal-delay-3 { transition-delay: 300ms; }
+.reveal-delay-4 { transition-delay: 400ms; }
+.reveal-delay-5 { transition-delay: 500ms; }
+.reveal-delay-6 { transition-delay: 600ms; }
+.reveal-delay-7 { transition-delay: 700ms; }
 </style>
