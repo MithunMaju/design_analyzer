@@ -520,7 +520,7 @@ async function generateReport() {
       },
     });
     report.value = res.report;
-    svg.value = res.svg || '';
+    svg.value = '';
     saveToHistory();
     downloadReport();
 

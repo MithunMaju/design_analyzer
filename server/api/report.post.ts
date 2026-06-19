@@ -83,16 +83,7 @@ FINAL REMINDERS
 OUTPUT FORMAT
 ==================================================
 You MUST return a JSON object with the following keys:
-1. "report": The full Markdown report structured exactly as described above (under the "# Design Architecture Report" heading).
-2. "svg": A premium, minimalist typographic SVG card representing the website's design system using the extracted evidence (colors, typography).
-
-The SVG must:
-- Have viewBox='0 0 1200 630' (landscape aspect ratio matching the showcase cards).
-- Render a stunning, minimalist typographic card: a smooth, high-end vertical linear gradient background (light white-to-gray for light sites, or dark slate-to-black for dark sites).
-- Place the website's domain name (lowercase, e.g., 'harvey.ai', 'reddit.com') centered in large, bold typography in the middle (x="50%", y="50%", text-anchor="middle", dominant-baseline="middle").
-- Use the website's actual primary/heading font-family if observed, and color the text with a high-contrast premium color (charcoal black '#18181b' for light cards, white '#ffffff' for dark cards, or a touch of the site's actual brand color). Do not output any other text, report contents, colors lists, or tables in the SVG visual.
-- Be clean, valid SVG markup (no markdown formatting, no html wrappers, no external font dependencies, valid XML).
-- Use standard SVG tags (linearGradient, rect, text) with inline styling. Do not write complex dashboards, just draw a clean centered typographic layout.`;
+1. "report": The full Markdown report structured exactly as described above (under the "# Design Architecture Report" heading).`;
 
 export default defineEventHandler(async (event) => {
   const { curated } = await readBody(event);
@@ -109,7 +100,7 @@ export default defineEventHandler(async (event) => {
   // curated evidence object alongside the long system prompt.
   const evidence = curated;
 
-  const userContent = `Produce a Design Architecture Report and styling SVG for: ${evidence.meta?.url || '(unknown URL)'}\n\nCurated extraction data:\n\`\`\`json\n${JSON.stringify(evidence, null, 2)}\n\`\`\``;
+  const userContent = `Produce a Design Architecture Report for: ${evidence.meta?.url || '(unknown URL)'}\n\nCurated extraction data:\n\`\`\`json\n${JSON.stringify(evidence, null, 2)}\n\`\`\``;
 
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
@@ -153,14 +144,12 @@ export default defineEventHandler(async (event) => {
   if (!text) throw createError({ statusCode: 502, message: 'Gemini returned an empty report' });
 
   let report = text;
-  let svg = '';
   try {
     const parsed = JSON.parse(text);
     report = parsed.report || text;
-    svg = parsed.svg || '';
   } catch (e) {
     console.warn('Failed to parse Gemini JSON output, falling back to raw text:', e);
   }
 
-  return { report, svg };
+  return { report };
 });
