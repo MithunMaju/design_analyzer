@@ -1,7 +1,8 @@
 export function extractSummary(report: string): string {
   if (!report) return '';
-  // Extract text under 'Executive Summary' up to the next heading, matching different heading levels or numbers
-  const match = report.match(/(?:#+)\s+(?:\d+\.)?\s*Executive Summary\s*\n+([\s\S]*?)(?=\n+#+|$)/i);
+  // Extract text under 'Executive Summary' line up to the next heading.
+  // Uses [^\n]*? to robustly match headings containing bold tags (**Executive Summary**), numbers, or trailing punctuation.
+  const match = report.match(/(?:#+)\s+[^\n]*?Executive Summary[^\n]*?\n+([\s\S]*?)(?=\n+#+|$)/i);
   if (match && match[1]) {
     // Strip evidence tags like [observed] or [inferred] to make it clean for a homepage card
     return match[1]
@@ -55,6 +56,61 @@ export function inferCategory(url: string, title: string, summary: string, detec
   return 'Technology'; // Fallback category
 }
 
+export function parseColorToHex(colorStr: string): string | null {
+  if (!colorStr) return null;
+  colorStr = colorStr.trim();
+
+  // Hex format already
+  if (colorStr.startsWith('#')) {
+    const match = colorStr.match(/^#([0-9a-fA-F]{3,8})/);
+    if (match) {
+      const hex = match[1];
+      if (hex.length === 3 || hex.length === 6) return `#${hex}`;
+      if (hex.length === 4 || hex.length === 8) return `#${hex.slice(0, hex.length === 4 ? 3 : 6)}`;
+      return colorStr;
+    }
+  }
+
+  // RGB/RGBA formats (e.g. rgb(255 69 0) or rgba(59,130,246,.5))
+  const rgbMatch = colorStr.match(/rgba?\((\d+)[,\s]+(\d+)[,\s]+(\d+)/i);
+  if (rgbMatch) {
+    const r = parseInt(rgbMatch[1], 10);
+    const g = parseInt(rgbMatch[2], 10);
+    const b = parseInt(rgbMatch[3], 10);
+    if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+      const toHex = (c: number) => {
+        const hex = Math.min(255, Math.max(0, c)).toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+      };
+      return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    }
+  }
+
+  return null;
+}
+
+export function isColorful(hex: string): boolean {
+  const match = hex.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+  if (!match) return false;
+  const r = parseInt(match[1], 16);
+  const g = parseInt(match[2], 16);
+  const b = parseInt(match[3], 16);
+  
+  // Neutral colors (grayscale) have very close rgb components
+  const diff1 = Math.abs(r - g);
+  const diff2 = Math.abs(g - b);
+  const diff3 = Math.abs(b - r);
+  if (diff1 < 25 && diff2 < 25 && diff3 < 25) return false;
+  
+  // Exclude extremely dark colors (blackish backgrounds)
+  if (r < 30 && g < 30 && b < 30) return false;
+  
+  // Exclude extremely light colors (whitish backgrounds)
+  if (r > 240 && g > 240 && b > 240) return false;
+  
+  return true;
+}
+
 export function extractColors(item: any): { primary: string, accent: string, bg: string, isDark: boolean } {
   const colors = {
     primary: '#635bff', // Default brand color (indigo)
@@ -63,37 +119,109 @@ export function extractColors(item: any): { primary: string, accent: string, bg:
     isDark: false
   };
 
+  const cssColors = item.result?.curated?.cssEvidence?.colors || [];
   const props = item.result?.curated?.customProperties || [];
-  const colorRegex = /#(?:[0-9a-fA-F]{3}){1,2}\b/;
 
+  // 1. Gather all parsed hex colors
+  const parsedColors: string[] = [];
+  const colorSet = new Set<string>();
+
+  // Process custom properties first (more specific to element states)
+  for (const prop of props) {
+    if (typeof prop !== 'object' || !prop.value) continue;
+    const hex = parseColorToHex(prop.value);
+    if (hex && !colorSet.has(hex)) {
+      colorSet.add(hex);
+      parsedColors.push(hex);
+    }
+  }
+
+  // Process stylesheet colors
+  for (const c of cssColors) {
+    const hex = parseColorToHex(c);
+    if (hex && !colorSet.has(hex)) {
+      colorSet.add(hex);
+      parsedColors.push(hex);
+    }
+  }
+
+  // 2. Extract background color candidate
   let bgCandidate = '';
-  let primaryCandidate = '';
-  let accentCandidate = '';
-
   for (const prop of props) {
     if (typeof prop !== 'object' || !prop.name) continue;
     const name = prop.name.toLowerCase();
-    const value = (prop.value || '').trim();
-
-    if (colorRegex.test(value)) {
-      if (name.includes('bg') || name.includes('background')) {
-        bgCandidate = value;
-      } else if (name.includes('primary') || name.includes('brand')) {
-        primaryCandidate = value;
-      } else if (name.includes('accent') || name.includes('link') || name.includes('active')) {
-        accentCandidate = value;
+    if (name.includes('bg') || name.includes('background')) {
+      const hex = parseColorToHex(prop.value);
+      if (hex) {
+        bgCandidate = hex;
+        break;
       }
     }
   }
 
-  if (bgCandidate) colors.bg = bgCandidate;
-  if (primaryCandidate) colors.primary = primaryCandidate;
-  if (accentCandidate) colors.accent = accentCandidate;
+  if (!bgCandidate) {
+    for (const hex of parsedColors) {
+      if (hex === '#ffffff' || hex === '#000000' || hex === '#08090a' || hex === '#0b0c0e' || hex === '#f8f9fa' || hex === '#fcfbf8') {
+        bgCandidate = hex;
+        break;
+      }
+    }
+  }
 
-  // Heuristic to detect dark mode background
-  const bg = colors.bg.toLowerCase();
-  if (bg === '#000' || bg === '#000000' || bg.includes('black') || bg.startsWith('#0f') || bg.startsWith('#1')) {
-    colors.isDark = true;
+  if (bgCandidate) {
+    colors.bg = bgCandidate;
+    const hex = bgCandidate.toLowerCase();
+    if (hex === '#000000' || hex === '#08090a' || hex === '#0b0c0e' || hex.startsWith('#1') || hex.startsWith('#0f')) {
+      colors.isDark = true;
+    }
+  }
+
+  // 3. Extract primary and accent brand colors (colorful elements)
+  const colorful = parsedColors.filter(isColorful);
+
+  if (colorful.length > 0) {
+    let brandColor = '';
+    for (const prop of props) {
+      if (typeof prop !== 'object' || !prop.name) continue;
+      const name = prop.name.toLowerCase();
+      if (name.includes('primary') || name.includes('brand') || name.includes('logo')) {
+        const hex = parseColorToHex(prop.value);
+        if (hex && isColorful(hex)) {
+          brandColor = hex;
+          break;
+        }
+      }
+    }
+
+    if (brandColor) {
+      colors.primary = brandColor;
+      const remaining = colorful.filter(c => c !== brandColor);
+      if (remaining.length > 0) {
+        colors.accent = remaining[0];
+      } else {
+        colors.accent = brandColor;
+      }
+    } else {
+      colors.primary = colorful[0];
+      if (colorful.length > 1) {
+        colors.accent = colorful[1];
+      } else {
+        colors.accent = colorful[0];
+      }
+      
+      // Override: Prioritize reddish/orange branding colors (e.g. Reddit's #ff4500)
+      const orangeOrRed = colorful.find(c => {
+        const r = parseInt(c.slice(1,3), 16);
+        const g = parseInt(c.slice(3,5), 16);
+        const b = parseInt(c.slice(5,7), 16);
+        return r > 200 && g < 120 && b < 80;
+      });
+      if (orangeOrRed) {
+        colors.primary = orangeOrRed;
+        const other = colorful.find(c => c !== orangeOrRed);
+        if (other) colors.accent = other;
+      }
+    }
   }
 
   return colors;
