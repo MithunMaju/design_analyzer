@@ -128,7 +128,7 @@ export function extractColors(item: any): { primary: string, accent: string, bg:
 
   // Process custom properties first (more specific to element states)
   for (const prop of props) {
-    if (typeof prop !== 'object' || !prop.value) continue;
+    if (!prop || typeof prop !== 'object' || !prop.value) continue;
     const hex = parseColorToHex(prop.value);
     if (hex && !colorSet.has(hex)) {
       colorSet.add(hex);
@@ -148,7 +148,7 @@ export function extractColors(item: any): { primary: string, accent: string, bg:
   // 2. Extract background color candidate
   let bgCandidate = '';
   for (const prop of props) {
-    if (typeof prop !== 'object' || !prop.name) continue;
+    if (!prop || typeof prop !== 'object' || !prop.name) continue;
     const name = prop.name.toLowerCase();
     if (name.includes('bg') || name.includes('background')) {
       const hex = parseColorToHex(prop.value);
@@ -182,7 +182,7 @@ export function extractColors(item: any): { primary: string, accent: string, bg:
   if (colorful.length > 0) {
     let brandColor = '';
     for (const prop of props) {
-      if (typeof prop !== 'object' || !prop.name) continue;
+      if (!prop || typeof prop !== 'object' || !prop.name) continue;
       const name = prop.name.toLowerCase();
       if (name.includes('primary') || name.includes('brand') || name.includes('logo')) {
         const hex = parseColorToHex(prop.value);
@@ -227,53 +227,177 @@ export function extractColors(item: any): { primary: string, accent: string, bg:
   return colors;
 }
 
-export function generateFallbackSvg(item: any): string {
-  const title = item.title || 'Design Report';
-  const domain = item.domain || 'domain.com';
-  const colors = extractColors(item);
+export function cleanBrandTitle(title: string, domain: string): string {
+  if (!title) return 'Design';
+  
+  let cleaned = title.trim();
+  
+  // Clean titles like "Stripe | Financial Infrastructure" or "Reddit - Dive into anything"
+  if (cleaned.includes('|')) {
+    cleaned = cleaned.split('|')[0].trim();
+  } else if (cleaned.includes(' - ')) {
+    cleaned = cleaned.split(' - ')[0].trim();
+  } else if (cleaned.includes(' – ')) {
+    cleaned = cleaned.split(' – ')[0].trim();
+  } else if (cleaned.includes(':')) {
+    cleaned = cleaned.split(':')[0].trim();
+  }
+  
+  // If it matches domain or is a URL
+  if (cleaned.includes('.') && cleaned.toLowerCase() === domain.toLowerCase()) {
+    const parts = domain.split('.');
+    cleaned = parts[0];
+  }
+  
+  cleaned = cleaned.replace(/^(https?:\/\/)?(www\.)?/, '');
+  
+  // Capitalize first letter
+  if (cleaned.length > 0) {
+    cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  }
+  
+  return cleaned || 'Design';
+}
 
-  const bg = colors.isDark ? '#0b0c0e' : '#f8f9fa';
-  const panelBg = colors.isDark ? '#121417' : '#ffffff';
-  const borderColor = colors.isDark ? '#22262c' : '#e9ecef';
-  const textColor = colors.isDark ? '#f8f9fa' : '#212529';
-  const mutedTextColor = colors.isDark ? '#6c757d' : '#adb5bd';
+export function detectFontFamily(item: any): { url: string, family: string, serif: boolean, fontStyle: string } {
+  const domFonts = item.result?.curated?.domEvidence;
+  const h1Font = domFonts?.desktop?.h1Font || domFonts?.mobile?.h1Font || '';
+  const bodyFont = domFonts?.desktop?.bodyFont || domFonts?.mobile?.bodyFont || '';
+  const fontFamilies = item.result?.curated?.cssEvidence?.fontFamilies || [];
+  
+  const allFontsStr = `${h1Font} ${bodyFont} ${fontFamilies.join(' ')}`.toLowerCase();
+  
+  // 1. Serif / Editorial fonts
+  if (
+    allFontsStr.includes('playfair') ||
+    allFontsStr.includes('serif') ||
+    allFontsStr.includes('garamond') ||
+    allFontsStr.includes('georgia') ||
+    allFontsStr.includes('times') ||
+    allFontsStr.includes('editorial') ||
+    allFontsStr.includes('lora') ||
+    allFontsStr.includes('cormorant') ||
+    allFontsStr.includes('merriweather') ||
+    allFontsStr.includes('harvey')
+  ) {
+    return {
+      url: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&display=swap',
+      family: "'Cormorant Garamond', serif",
+      serif: true,
+      fontStyle: 'font-weight: 500; letter-spacing: -0.01em;'
+    };
+  }
+  
+  // 2. Mono / Tech fonts
+  if (
+    allFontsStr.includes('mono') ||
+    allFontsStr.includes('code') ||
+    allFontsStr.includes('consolas') ||
+    allFontsStr.includes('courier') ||
+    allFontsStr.includes('sfmono')
+  ) {
+    return {
+      url: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap',
+      family: "'JetBrains Mono', monospace",
+      serif: false,
+      fontStyle: 'font-weight: 700; letter-spacing: -0.03em;'
+    };
+  }
+  
+  // 3. Modern display / Grotesk fonts
+  if (
+    allFontsStr.includes('grotesk') ||
+    allFontsStr.includes('space') ||
+    allFontsStr.includes('syne') ||
+    allFontsStr.includes('clash')
+  ) {
+    return {
+      url: 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap',
+      family: "'Space Grotesk', sans-serif",
+      serif: false,
+      fontStyle: 'font-weight: 700; letter-spacing: -0.04em;'
+    };
+  }
+
+  // 4. Premium sans fonts like Outfit
+  if (
+    allFontsStr.includes('outfit') ||
+    allFontsStr.includes('lexend') ||
+    allFontsStr.includes('sora')
+  ) {
+    return {
+      url: 'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;800&display=swap',
+      family: "'Outfit', sans-serif",
+      serif: false,
+      fontStyle: 'font-weight: 700; letter-spacing: -0.03em;'
+    };
+  }
+
+  // 5. Default premium Sans (Plus Jakarta Sans)
+  return {
+    url: 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,700;0,800;1,400&display=swap',
+    family: "'Plus Jakarta Sans', sans-serif",
+    serif: false,
+    fontStyle: 'font-weight: 700; letter-spacing: -0.02em;'
+  };
+}
+
+export function generateFallbackSvg(item: any): string {
+  const domain = item.domain || 'domain.com';
+  const cleanTitle = cleanBrandTitle(item.title || 'Design', domain);
+  const colors = extractColors(item);
+  const fontData = detectFontFamily(item);
+
+  const primaryHex = colors.primary || '#635bff';
+  const isDark = colors.isDark;
+
+  // Setup text contrast color
+  const textColor = isDark ? '#ffffff' : '#18181b';
+
+  // Dynamic font size based on word length
+  let fontSize = 90;
+  if (cleanTitle.length > 8) fontSize = 80;
+  if (cleanTitle.length > 12) fontSize = 64;
+  if (cleanTitle.length > 18) fontSize = 48;
+
+  // Clean key for gradient ID to avoid syntax errors
+  const gradKey = domain.replace(/[^a-zA-Z0-9]/g, '');
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="100%" height="100%">
-    <!-- Base Background -->
-    <rect width="1200" height="630" fill="${bg}" />
-    <!-- Grid Pattern -->
-    <g stroke="${colors.isDark ? '#ffffff' : '#000000'}" stroke-opacity="0.03" stroke-width="1">
-      <path d="M 0,100 L 1200,100 M 0,200 L 1200,200 M 0,300 L 1200,300 M 0,400 L 1200,400 M 0,500 L 1200,500" />
-      <path d="M 200,0 L 200,630 M 400,0 L 400,630 M 600,0 L 600,630 M 800,0 L 800,630 M 1000,0 L 1000,630" />
-    </g>
-    <!-- Mock Browser Header -->
-    <rect width="1200" height="70" fill="${panelBg}" stroke="${borderColor}" stroke-width="1" />
-    <circle cx="40" cy="35" r="7" fill="#ff5f56" />
-    <circle cx="65" cy="35" r="7" fill="#ffbd2e" />
-    <circle cx="90" cy="35" r="7" fill="#27c93f" />
+    <defs>
+      <linearGradient id="brand-grad-${gradKey}" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="${primaryHex}" stop-opacity="${isDark ? 0.22 : 0.14}" />
+        <stop offset="100%" stop-color="${isDark ? '#0c0c0e' : '#e4e4e7'}" stop-opacity="${isDark ? 0.98 : 0.95}" />
+      </linearGradient>
+    </defs>
     
-    <!-- Address Bar -->
-    <rect x="250" y="20" width="700" height="30" rx="15" fill="${bg}" stroke="${borderColor}" stroke-width="1" />
-    <text x="600" y="40" font-family="monospace" font-size="12" fill="${mutedTextColor}" text-anchor="middle">${domain}</text>
+    <style>
+      @import url('${fontData.url}');
+      .brand-title-${gradKey} {
+        font-family: ${fontData.family};
+        ${fontData.fontStyle}
+        fill: ${textColor};
+      }
+    </style>
 
-    <!-- Main Container -->
-    <rect x="80" y="120" width="1040" height="430" rx="16" fill="${panelBg}" stroke="${borderColor}" stroke-width="1.5" />
-
-    <!-- Hero Content -->
-    <rect x="140" y="185" width="400" height="32" rx="6" fill="${colors.primary}" />
-    <rect x="140" y="240" width="300" height="12" rx="3" fill="${mutedTextColor}" opacity="0.5" />
-    <rect x="140" y="265" width="350" height="12" rx="3" fill="${mutedTextColor}" opacity="0.3" />
-    <rect x="140" y="310" width="130" height="36" rx="18" fill="${colors.accent}" />
-
-    <!-- Mock Cards (Right Column) -->
-    <rect x="660" y="170" width="400" height="140" rx="12" fill="${bg}" stroke="${borderColor}" stroke-width="1" />
-    <circle cx="710" cy="220" r="20" fill="${colors.primary}" opacity="0.8" />
-    <rect x="750" y="200" width="270" height="12" rx="3" fill="${textColor}" />
-    <rect x="750" y="225" width="180" height="8" rx="2" fill="${mutedTextColor}" opacity="0.6" />
+    <!-- Background solid -->
+    <rect width="1200" height="630" fill="${isDark ? '#0c0c0e' : '#ffffff'}" />
     
-    <rect x="660" y="335" width="400" height="140" rx="12" fill="${bg}" stroke="${borderColor}" stroke-width="1" />
-    <circle cx="710" cy="385" r="20" fill="${colors.accent}" opacity="0.8" />
-    <rect x="750" y="365" width="270" height="12" rx="3" fill="${textColor}" />
-    <rect x="750" y="390" width="180" height="8" rx="2" fill="${mutedTextColor}" opacity="0.6" />
+    <!-- Brand Gradient Overlay -->
+    <rect width="1200" height="630" fill="url(#brand-grad-${gradKey})" />
+    
+    <!-- Decorative subtle border inside -->
+    <rect x="4" y="4" width="1192" height="622" fill="none" stroke="${isDark ? '#ffffff' : '#000000'}" stroke-opacity="0.04" stroke-width="4" />
+
+    <!-- Centered Brand Title -->
+    <text 
+      x="50%" 
+      y="50%" 
+      text-anchor="middle" 
+      dominant-baseline="middle" 
+      alignment-baseline="middle"
+      class="brand-title-${gradKey}"
+      font-size="${fontSize}"
+    >${cleanTitle}</text>
   </svg>`;
 }

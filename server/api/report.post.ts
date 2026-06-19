@@ -84,13 +84,15 @@ OUTPUT FORMAT
 ==================================================
 You MUST return a JSON object with the following keys:
 1. "report": The full Markdown report structured exactly as described above (under the "# Design Architecture Report" heading).
-2. "svg": A premium, abstract SVG wireframe mockup illustration representing the website's design system using the extracted evidence (colors, typography, spacing, layout).
+2. "svg": A premium, minimalist typographic SVG card representing the website's design system using the extracted evidence (colors, typography).
 
 The SVG must:
 - Have viewBox='0 0 1200 630' (landscape aspect ratio matching the showcase cards).
-- Render a stunning, modern dark or light mockup design containing stylized cards, grids, text placeholders, and buttons styled with the site's actual observed color palette. It should look like a premium designer-made visual card/art.
+- Render a stunning, minimalist typographic card: a smooth, high-end vertical linear gradient background (light white-to-gray for light sites, or dark slate-to-black for dark sites).
+- Place the website's title/logo centered in large, bold typography in the middle (x="50%", y="50%", text-anchor="middle", dominant-baseline="middle").
+- Use the website's actual primary/heading font-family if observed, and color the text with a high-contrast premium color (charcoal black '#18181b' for light cards, white '#ffffff' for dark cards, or a touch of the site's actual brand color).
 - Be clean, valid SVG markup (no markdown formatting, no html wrappers, no external font dependencies, valid XML).
-- Use standard SVG tags (rect, circle, path, g, text) with inline styling. Do not use generic grey layouts if colors are observed in the evidence; use the site's primary and accent colors!`;
+- Use standard SVG tags (linearGradient, rect, text) with inline styling. Do not write complex dashboards, just draw a clean centered typographic layout.`;
 
 export default defineEventHandler(async (event) => {
   const { curated } = await readBody(event);
