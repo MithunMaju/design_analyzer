@@ -23,9 +23,22 @@ export default {
         muted: '#52526a',
         foreground: '#e2e2f0',
         dim: '#8888a8',
-        'accent-chrono': '#824873',
+        'accent-chrono': '#208b9b',
         'bg-chrono': '#030303',
         'card-chrono': '#0c0c0e',
+        neutral: {
+          50: '#f4f8f8',    // Finpay clean off-white background
+          100: '#e2e8ec',   // Light border
+          200: '#cfdadf',
+          300: '#9cb5c5',
+          400: '#6e8494',   // Finpay slate-blue text secondary
+          500: '#4d687b',
+          600: '#385062',
+          700: '#253949',
+          800: '#142531',
+          900: '#092230',   // Finpay deep navy text primary
+          950: '#062d3e',   // Finpay dark button background / contrast accent
+        },
         theme: {
           bg: '#000000',
           dark: '#ffffff',
