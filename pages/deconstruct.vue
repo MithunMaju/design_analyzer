@@ -367,6 +367,7 @@ const progress = ref(0);
 const error = ref('');
 const result = ref<any>(null);
 const report = ref('');
+const svg = ref('');
 const reportError = ref('');
 const activeTab = ref('report');
 const copied = ref(false);
@@ -403,8 +404,19 @@ onMounted(async () => {
       if (detail && detail.result && detail.report) {
         result.value = detail.result;
         report.value = detail.report;
+        svg.value = detail.svg || '';
         loadedFromLocalHistory.value = true;
         console.log('Loaded from shared database cache instantly!');
+        
+        // Track viewed URL in user's deconstructions history
+        if (process.client) {
+          const stored = localStorage.getItem('user_deconstructions');
+          let list = stored ? JSON.parse(stored) : [];
+          if (!list.includes(queryUrl)) {
+            list.push(queryUrl);
+            localStorage.setItem('user_deconstructions', JSON.stringify(list));
+          }
+        }
       }
     } catch (e) {
       console.warn('Failed to load from shared database cache:', e);
@@ -429,9 +441,20 @@ async function saveToHistory() {
         domain,
         date: new Date().toLocaleDateString(),
         report: report.value,
-        result: result.value
+        result: result.value,
+        svg: svg.value
       }
     });
+
+    // Track saved URL in user's deconstructions history
+    if (process.client) {
+      const stored = localStorage.getItem('user_deconstructions');
+      let list = stored ? JSON.parse(stored) : [];
+      if (!list.includes(urlVal)) {
+        list.push(urlVal);
+        localStorage.setItem('user_deconstructions', JSON.stringify(list));
+      }
+    }
 
     loadedFromLocalHistory.value = false;
   } catch (e) {
@@ -492,7 +515,7 @@ async function generateReport() {
   reportError.value = '';
 
   try {
-    const res = await $fetch('/api/report', {
+    const res = await $fetch<any>('/api/report', {
       method: 'POST',
       body: {
         curated: result.value.curated,
@@ -500,7 +523,8 @@ async function generateReport() {
         mobileScreenshot: result.value.mobileScreenshot,
       },
     });
-    report.value = (res as any).report;
+    report.value = res.report;
+    svg.value = res.svg || '';
     saveToHistory();
     downloadReport();
 

@@ -26,7 +26,8 @@ export default defineEventHandler(async (event) => {
     report: reportText,
     result: body.result || null,
     summary: summary,
-    category: category
+    category: category,
+    svg: body.svg || ''
   };
 
   await storage.setItem(key, payload);

@@ -26,6 +26,7 @@ export default defineEventHandler(async (event) => {
         summary: summary,
         category: category,
         screenshot: item.result?.screenshot || '',
+        svg: item.svg || '',
         result: {
           curated: {
             customProperties: { length: item.result?.curated?.customProperties?.length || 0 },

@@ -77,8 +77,20 @@ Render compact Markdown tables of the raw key evidence used above for quick refe
 FINAL REMINDERS
 ==================================================
 - Every section must exist, even if short — sparse sections should explain WHY they are sparse (limited evidence) rather than being omitted or padded with filler.
-- Do not include any text before the "# Design Architecture Report" heading or after Section 12.
-- Output must be valid Markdown.`;
+- Output must be valid Markdown inside the JSON structure.
+
+==================================================
+OUTPUT FORMAT
+==================================================
+You MUST return a JSON object with the following keys:
+1. "report": The full Markdown report structured exactly as described above (under the "# Design Architecture Report" heading).
+2. "svg": A premium, abstract SVG wireframe mockup illustration representing the website's design system using the extracted evidence (colors, typography, spacing, layout).
+
+The SVG must:
+- Have viewBox='0 0 1200 630' (landscape aspect ratio matching the showcase cards).
+- Render a stunning, modern dark or light mockup design containing stylized cards, grids, text placeholders, and buttons styled with the site's actual observed color palette. It should look like a premium designer-made visual card/art.
+- Be clean, valid SVG markup (no markdown formatting, no html wrappers, no external font dependencies, valid XML).
+- Use standard SVG tags (rect, circle, path, g, text) with inline styling. Do not use generic grey layouts if colors are observed in the evidence; use the site's primary and accent colors!`;
 
 export default defineEventHandler(async (event) => {
   const { curated } = await readBody(event);
@@ -95,7 +107,7 @@ export default defineEventHandler(async (event) => {
   // curated evidence object alongside the long system prompt.
   const evidence = curated;
 
-  const userContent = `Produce a Design Architecture Report for: ${evidence.meta?.url || '(unknown URL)'}\n\nCurated extraction data:\n\`\`\`json\n${JSON.stringify(evidence, null, 2)}\n\`\`\``;
+  const userContent = `Produce a Design Architecture Report and styling SVG for: ${evidence.meta?.url || '(unknown URL)'}\n\nCurated extraction data:\n\`\`\`json\n${JSON.stringify(evidence, null, 2)}\n\`\`\``;
 
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
@@ -118,6 +130,7 @@ export default defineEventHandler(async (event) => {
         generationConfig: {
           temperature: 0.2,
           maxOutputTokens: 16384,
+          responseMimeType: "application/json"
         },
       }),
       signal: AbortSignal.timeout(90000),
@@ -133,9 +146,19 @@ export default defineEventHandler(async (event) => {
   }
 
   const json = await res.json();
-  const report = json?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join('').trim();
+  const text = json?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join('').trim();
 
-  if (!report) throw createError({ statusCode: 502, message: 'Gemini returned an empty report' });
+  if (!text) throw createError({ statusCode: 502, message: 'Gemini returned an empty report' });
 
-  return { report };
+  let report = text;
+  let svg = '';
+  try {
+    const parsed = JSON.parse(text);
+    report = parsed.report || text;
+    svg = parsed.svg || '';
+  } catch (e) {
+    console.warn('Failed to parse Gemini JSON output, falling back to raw text:', e);
+  }
+
+  return { report, svg };
 });
