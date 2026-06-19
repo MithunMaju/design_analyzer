@@ -76,15 +76,15 @@
     <div v-if="result" class="space-y-10 border-t border-theme-border pt-16 mb-20" id="results">
       <div class="flex flex-col md:flex-row md:items-end justify-between mb-8">
         <div>
-          <span class="font-display text-[9px] text-theme-muted uppercase tracking-widest font-semibold block mb-2">Analysis Results</span>
-          <h2 class="font-display font-bold text-2xl uppercase tracking-wider text-theme-dark">The House Blend.</h2>
+          <span class="font-display text-[9px] text-neutral-400 uppercase tracking-widest font-semibold block mb-2">Analysis Results</span>
+          <h2 class="font-display font-bold text-2xl uppercase tracking-wider text-white">The House Blend.</h2>
         </div>
         <!-- Cached badge -->
         <div class="flex gap-2 items-center">
-          <div v-if="result.cached" class="mt-4 md:mt-0 font-mono text-[9px] text-theme-muted border border-theme-border px-3 py-1 uppercase tracking-wider">
+          <div v-if="result.cached" class="mt-4 md:mt-0 font-mono text-[9px] text-neutral-400 border border-white/10 px-3 py-1 uppercase tracking-wider">
             Served from cache — instant load
           </div>
-          <div v-else-if="loadedFromLocalHistory" class="mt-4 md:mt-0 font-mono text-[9px] text-theme-muted border border-theme-border px-3 py-1 uppercase tracking-wider">
+          <div v-else-if="loadedFromLocalHistory" class="mt-4 md:mt-0 font-mono text-[9px] text-neutral-400 border border-white/10 px-3 py-1 uppercase tracking-wider">
             Loaded from shared cache — instant load
           </div>
         </div>
@@ -101,14 +101,14 @@
       <!-- Screenshots -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <!-- Desktop Screenshot Card -->
-        <div class="bg-theme-card-bg border border-theme-border p-3 rounded-2xl overflow-hidden shadow-md flex flex-col h-[600px]">
-          <div class="px-3 py-2 border-b border-theme-border flex justify-between items-center flex-shrink-0">
+        <div class="bg-[#0d0d0e]/80 backdrop-blur-md border border-white/10 p-3 rounded-2xl overflow-hidden shadow-md flex flex-col h-[600px]">
+          <div class="px-3 py-2 border-b border-white/10 flex justify-between items-center flex-shrink-0">
             <div class="flex gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full bg-red-400/80"></span>
               <span class="w-2.5 h-2.5 rounded-full bg-yellow-400/80"></span>
               <span class="w-2.5 h-2.5 rounded-full bg-green-400/80"></span>
             </div>
-            <span class="font-display text-[9px] text-theme-muted uppercase tracking-wider font-semibold">Desktop (1440px)</span>
+            <span class="font-display text-[9px] text-neutral-400 uppercase tracking-wider font-semibold">Desktop (1440px)</span>
           </div>
           <div v-if="result.screenshot" class="flex-1 overflow-x-hidden overflow-y-auto mt-2 rounded-lg screenshot-viewport">
             <img
@@ -117,27 +117,27 @@
               class="w-full block h-auto object-cover object-top"
             />
           </div>
-          <div v-else class="flex-1 flex flex-col items-center justify-center p-8 text-center bg-neutral-50 dark:bg-neutral-900/40 mt-2 rounded-lg border border-dashed border-theme-border">
-            <svg class="w-10 h-10 text-theme-muted/50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div v-else class="flex-1 flex flex-col items-center justify-center p-8 text-center bg-neutral-900/40 mt-2 rounded-lg border border-dashed border-white/10">
+            <svg class="w-10 h-10 text-neutral-400/50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <p class="font-display text-[10px] text-theme-dark uppercase tracking-widest font-bold mb-2">Screenshot Skipped</p>
-            <p class="text-[11px] text-theme-muted max-w-[240px] leading-relaxed">
+            <p class="font-display text-[10px] text-white uppercase tracking-widest font-bold mb-2">Screenshot Skipped</p>
+            <p class="text-[11px] text-neutral-400 max-w-[240px] leading-relaxed">
               Target site has heavy media load times or security challenges causing the screenshot proxy step to be omitted to prioritize data/custom property extraction.
             </p>
           </div>
         </div>
 
         <!-- Mobile Screenshot Card -->
-        <div class="bg-theme-card-bg border border-theme-border p-3 rounded-2xl overflow-hidden shadow-md flex flex-col h-[600px]">
-          <div class="px-3 py-2 border-b border-theme-border flex justify-between items-center flex-shrink-0">
+        <div class="bg-[#0d0d0e]/80 backdrop-blur-md border border-white/10 p-3 rounded-2xl overflow-hidden shadow-md flex flex-col h-[600px]">
+          <div class="px-3 py-2 border-b border-white/10 flex justify-between items-center flex-shrink-0">
             <div class="flex gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full bg-red-400/80"></span>
               <span class="w-2.5 h-2.5 rounded-full bg-yellow-400/80"></span>
               <span class="w-2.5 h-2.5 rounded-full bg-green-400/80"></span>
             </div>
-            <span class="font-display text-[9px] text-theme-muted uppercase tracking-wider font-semibold">Mobile (390px)</span>
+            <span class="font-display text-[9px] text-neutral-400 uppercase tracking-wider font-semibold">Mobile (390px)</span>
           </div>
           <div v-if="result.mobileScreenshot" class="flex-1 overflow-x-hidden overflow-y-auto mt-2 rounded-lg screenshot-viewport">
             <img
@@ -146,12 +146,12 @@
               class="w-full block h-auto object-cover object-top"
             />
           </div>
-          <div v-else class="flex-1 flex flex-col items-center justify-center p-8 text-center bg-neutral-50 dark:bg-neutral-900/40 mt-2 rounded-lg border border-dashed border-theme-border">
-            <svg class="w-10 h-10 text-theme-muted/50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div v-else class="flex-1 flex flex-col items-center justify-center p-8 text-center bg-neutral-900/40 mt-2 rounded-lg border border-dashed border-white/10">
+            <svg class="w-10 h-10 text-neutral-400/50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
-            <p class="font-display text-[10px] text-theme-dark uppercase tracking-widest font-bold mb-2">Screenshot Skipped</p>
-            <p class="text-[11px] text-theme-muted max-w-[240px] leading-relaxed">
+            <p class="font-display text-[10px] text-white uppercase tracking-widest font-bold mb-2">Screenshot Skipped</p>
+            <p class="text-[11px] text-neutral-400 max-w-[240px] leading-relaxed">
               Target site has heavy media load times or security challenges causing the screenshot proxy step to be omitted to prioritize data/custom property extraction.
             </p>
           </div>
@@ -159,8 +159,8 @@
       </div>
 
       <!-- Tab Details Card -->
-      <div class="border border-theme-border bg-theme-card-bg rounded-2xl overflow-hidden mt-12 shadow-md">
-        <div class="flex border-b border-theme-border bg-theme-card-bg overflow-x-auto">
+      <div class="border border-white/10 bg-[#0d0d0e]/80 backdrop-blur-md rounded-2xl overflow-hidden mt-12 shadow-md">
+        <div class="flex border-b border-white/10 bg-[#0d0d0e] overflow-x-auto">
           <TabBtn
             v-for="tab in tabs"
             :key="tab.id"
@@ -174,95 +174,95 @@
           <!-- Report Tab -->
           <div v-if="activeTab === 'report'">
             <div v-if="reportLoading" class="flex items-center gap-3 py-12 justify-center">
-              <div class="w-1.5 h-1.5 rounded-full bg-theme-dark animate-ping"></div>
-              <span class="font-display text-[10px] text-theme-muted uppercase tracking-widest font-semibold">Synthesizing design report...</span>
+              <div class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></div>
+              <span class="font-display text-[10px] text-neutral-400 uppercase tracking-widest font-semibold">Synthesizing design report...</span>
             </div>
             <div v-else-if="report">
               <div class="flex justify-end gap-2 mb-6">
                 <button
                   @click="copyReport"
-                  class="px-4 py-2 bg-theme-dark hover:bg-theme-muted text-white font-display text-[9px] uppercase tracking-widest shadow-sm"
+                  class="px-4 py-2 bg-white hover:bg-neutral-200 text-black font-display text-[9px] uppercase tracking-widest shadow-sm transition-colors"
                 >
                   {{ copied ? 'Copied!' : 'Copy Markdown' }}
                 </button>
                 <button
                   @click="downloadReport"
-                  class="px-4 py-2 bg-theme-dark hover:bg-theme-muted text-white font-display text-[9px] uppercase tracking-widest shadow-sm"
+                  class="px-4 py-2 bg-white hover:bg-neutral-200 text-black font-display text-[9px] uppercase tracking-widest shadow-sm transition-colors"
                 >
                   Download .md
                 </button>
               </div>
               <div
-                class="prose prose-sm max-w-none text-theme-dark"
+                class="prose prose-sm max-w-none text-white prose-invert"
                 v-html="renderedReport"
               ></div>
             </div>
             <div v-else class="text-center py-12">
               <button
                 @click="generateReport"
-                class="px-8 py-3 bg-theme-dark hover:bg-theme-muted text-white font-display text-[10px] uppercase tracking-widest shadow-sm"
+                class="px-8 py-3 bg-white hover:bg-neutral-200 text-black font-display text-[10px] uppercase tracking-widest shadow-sm transition-colors"
               >
                 Generate Report with Gemini
               </button>
-              <p class="text-theme-muted text-[10px] mt-3 uppercase font-mono tracking-wider">Uses Gemini API — free tier</p>
+              <p class="text-neutral-400 text-[10px] mt-3 uppercase font-mono tracking-wider">Uses Gemini API — free tier</p>
               <p v-if="reportError" class="text-red-600 font-mono text-xs mt-3">{{ reportError }}</p>
             </div>
           </div>
 
           <!-- Custom Properties tab -->
           <div v-if="activeTab === 'tokens'" class="space-y-3">
-            <p class="font-display text-[10px] text-theme-muted uppercase tracking-widest mb-4 border-b border-theme-border pb-2">
+            <p class="font-display text-[10px] text-neutral-400 uppercase tracking-widest mb-4 border-b border-white/10 pb-2">
               {{ result.curated.customProperties.length }} custom variables extracted
             </p>
-            <div class="divide-y divide-theme-border">
+            <div class="divide-y divide-white/10">
               <div
                 v-for="prop in result.curated.customProperties"
                 :key="prop.name"
                 class="flex items-center gap-3 py-3 px-1"
               >
                 <ColorSwatch :value="prop.value" />
-                <span class="font-mono text-xs text-theme-dark font-medium">{{ prop.name }}</span>
-                <span class="font-mono text-xs text-theme-muted ml-auto">{{ prop.value }}</span>
-                <span class="font-mono text-[9px] text-theme-muted/60 pl-2 uppercase tracking-wider">{{ prop.source }}</span>
+                <span class="font-mono text-xs text-white font-medium">{{ prop.name }}</span>
+                <span class="font-mono text-xs text-neutral-400 ml-auto">{{ prop.value }}</span>
+                <span class="font-mono text-[9px] text-neutral-400/60 pl-2 uppercase tracking-wider">{{ prop.source }}</span>
               </div>
             </div>
-            <p v-if="!result.curated.customProperties.length" class="text-theme-muted text-xs font-mono">No custom properties detected</p>
+            <p v-if="!result.curated.customProperties.length" class="text-neutral-400 text-xs font-mono">No custom properties detected</p>
           </div>
 
           <!-- Libraries tab -->
           <div v-if="activeTab === 'libraries'" class="space-y-6">
-            <p class="font-display text-[10px] text-theme-muted uppercase tracking-widest mb-4 border-b border-theme-border pb-2">
+            <p class="font-display text-[10px] text-neutral-400 uppercase tracking-widest mb-4 border-b border-white/10 pb-2">
               Libraries & dependencies detected
             </p>
             
             <div v-if="result.curated.detectedLibraries?.domConfirmed?.length" class="mb-4">
-              <p class="font-display text-[10px] text-theme-muted uppercase tracking-widest mb-2">Confirmed (Runtime DOM Globals)</p>
+              <p class="font-display text-[10px] text-neutral-400 uppercase tracking-widest mb-2">Confirmed (Runtime DOM Globals)</p>
               <div class="flex flex-wrap gap-2">
-                <span v-for="lib in result.curated.detectedLibraries.domConfirmed" :key="lib" class="px-3 py-1 bg-theme-dark text-white font-mono text-xs">{{ lib }}</span>
+                <span v-for="lib in result.curated.detectedLibraries.domConfirmed" :key="lib" class="px-3 py-1 bg-neutral-800 text-white font-mono text-xs rounded border border-white/5">{{ lib }}</span>
               </div>
             </div>
 
             <div v-if="result.curated.detectedLibraries?.scriptConfirmed?.length" class="mb-4">
-              <p class="font-display text-[10px] text-theme-muted uppercase tracking-widest mb-2">Confirmed (Script Filenames)</p>
+              <p class="font-display text-[10px] text-neutral-400 uppercase tracking-widest mb-2">Confirmed (Script Filenames)</p>
               <div class="flex flex-wrap gap-2">
-                <span v-for="lib in result.curated.detectedLibraries.scriptConfirmed" :key="lib" class="px-3 py-1 bg-theme-bg border border-theme-border text-theme-dark font-mono text-xs">{{ lib }}</span>
+                <span v-for="lib in result.curated.detectedLibraries.scriptConfirmed" :key="lib" class="px-3 py-1 bg-neutral-900 border border-white/10 text-white font-mono text-xs rounded">{{ lib }}</span>
               </div>
             </div>
 
             <div v-if="result.curated.detectedLibraries?.bundleHints?.length">
-              <p class="font-display text-[10px] text-theme-muted uppercase tracking-widest mb-2">Bundle hints (unconfirmed)</p>
+              <p class="font-display text-[10px] text-neutral-400 uppercase tracking-widest mb-2">Bundle hints (unconfirmed)</p>
               <div class="flex flex-wrap gap-2">
-                <span v-for="lib in result.curated.detectedLibraries.bundleHints" :key="lib" class="px-3 py-1 bg-theme-bg border border-theme-border/60 text-theme-muted font-mono text-xs">{{ lib }}</span>
+                <span v-for="lib in result.curated.detectedLibraries.bundleHints" :key="lib" class="px-3 py-1 bg-neutral-900 border border-white/10 text-neutral-400 font-mono text-xs rounded">{{ lib }}</span>
               </div>
             </div>
 
             <div v-if="result.curated.fonts.length" class="mt-6">
-              <p class="font-display text-[10px] text-theme-muted uppercase tracking-widest mb-3">Google Fonts</p>
+              <p class="font-display text-[10px] text-neutral-400 uppercase tracking-widest mb-3">Google Fonts</p>
               <div class="flex flex-wrap gap-2">
                 <span
                   v-for="font in result.curated.fonts"
                   :key="font"
-                  class="px-3 py-1 bg-theme-bg border border-theme-dark text-theme-dark font-mono text-xs"
+                  class="px-3 py-1 bg-neutral-900 border border-white/10 text-white font-mono text-xs rounded"
                 >
                   {{ font }}
                 </span>
@@ -272,31 +272,31 @@
 
           <!-- Routes tab -->
           <div v-if="activeTab === 'routes'" class="space-y-6">
-            <p class="font-display text-[10px] text-theme-muted uppercase tracking-widest mb-4 border-b border-theme-border pb-2">
+            <p class="font-display text-[10px] text-neutral-400 uppercase tracking-widest mb-4 border-b border-white/10 pb-2">
               Route paths & api bindings
             </p>
             
-            <div class="bg-theme-bg border border-theme-border p-4">
-              <p class="font-display text-[10px] text-theme-dark uppercase tracking-widest mb-3 font-semibold">Application Routes</p>
-              <div class="max-h-60 overflow-y-auto divide-y divide-theme-border pr-2">
+            <div class="bg-neutral-900 border border-white/10 p-4 rounded-xl">
+              <p class="font-display text-[10px] text-white uppercase tracking-widest mb-3 font-semibold">Application Routes</p>
+              <div class="max-h-60 overflow-y-auto divide-y divide-white/10 pr-2">
                 <div
                   v-for="route in result.curated.routes"
                   :key="route"
-                  class="py-2 font-mono text-xs text-theme-dark"
+                  class="py-2 font-mono text-xs text-white"
                 >
                   {{ route }}
                 </div>
               </div>
-              <p v-if="!result.curated.routes.length" class="text-theme-muted text-xs font-mono">No routes extracted</p>
+              <p v-if="!result.curated.routes.length" class="text-neutral-400 text-xs font-mono">No routes extracted</p>
             </div>
 
-            <div v-if="result.curated.apiEndpoints.length" class="bg-theme-bg border border-theme-border p-4">
-              <p class="font-display text-[10px] text-theme-dark uppercase tracking-widest mb-3 font-semibold">API Endpoints</p>
-              <div class="max-h-60 overflow-y-auto divide-y divide-theme-border pr-2">
+            <div v-if="result.curated.apiEndpoints.length" class="bg-neutral-900 border border-white/10 p-4 rounded-xl">
+              <p class="font-display text-[10px] text-white uppercase tracking-widest mb-3 font-semibold">API Endpoints</p>
+              <div class="max-h-60 overflow-y-auto divide-y divide-white/10 pr-2">
                 <div
                   v-for="ep in result.curated.apiEndpoints"
                   :key="ep"
-                  class="py-2 font-mono text-xs text-theme-dark break-all"
+                  class="py-2 font-mono text-xs text-white break-all"
                 >
                   {{ ep }}
                 </div>
@@ -306,23 +306,23 @@
 
           <!-- Tailwind tab -->
           <div v-if="activeTab === 'tailwind'" class="space-y-6">
-            <div v-if="result.curated.tailwindVersion" class="inline-flex items-center px-3 py-1 bg-theme-dark text-white text-xs font-mono">
+            <div v-if="result.curated.tailwindVersion" class="inline-flex items-center px-3 py-1 bg-neutral-800 text-white text-xs font-mono rounded border border-white/5">
               {{ result.curated.tailwindVersion }}
             </div>
-            <p v-else class="text-theme-muted text-xs font-mono">No Tailwind framework detected</p>
+            <p v-else class="text-neutral-400 text-xs font-mono">No Tailwind framework detected</p>
 
             <div
               v-for="(values, bucket) in result.curated.tailwindArbitraryValues"
               :key="bucket"
-              class="border border-theme-border p-4"
+              class="border border-white/10 p-4 rounded-xl"
             >
               <div v-if="values.length">
-                <p class="font-display text-[10px] text-theme-dark uppercase tracking-widest mb-2 font-semibold">{{ bucket }}</p>
+                <p class="font-display text-[10px] text-white uppercase tracking-widest mb-2 font-semibold">{{ bucket }}</p>
                 <div class="flex flex-wrap gap-2">
                   <span
                     v-for="val in values"
                     :key="val"
-                    class="px-2.5 py-1 bg-theme-card-bg border border-theme-border text-theme-dark font-mono text-xs"
+                    class="px-2.5 py-1 bg-neutral-800 border border-white/10 text-white font-mono text-xs rounded"
                   >
                     {{ val }}
                   </span>
@@ -331,24 +331,24 @@
             </div>
 
             <!-- Fallbacks -->
-            <div v-if="!result.curated.tailwindArbitraryValues.colors?.length && result.curated.domEvidence?.desktop?.colorSamples?.length" class="border border-theme-border p-4">
-              <p class="font-display text-[10px] text-theme-dark uppercase tracking-widest mb-3 font-semibold">Rendered Color Samples</p>
+            <div v-if="!result.curated.tailwindArbitraryValues.colors?.length && result.curated.domEvidence?.desktop?.colorSamples?.length" class="border border-white/10 p-4 rounded-xl">
+              <p class="font-display text-[10px] text-white uppercase tracking-widest mb-3 font-semibold">Rendered Color Samples</p>
               <div class="flex flex-wrap gap-4">
                 <div
                   v-for="color in result.curated.domEvidence.desktop.colorSamples"
                   :key="color"
-                  class="flex items-center gap-2 px-2 py-1 bg-theme-card-bg border border-theme-border"
+                  class="flex items-center gap-2 px-2 py-1 bg-neutral-800 border border-white/10 rounded"
                 >
-                  <div class="w-5 h-5 border border-theme-dark/15" :style="{ background: color }"></div>
-                  <span class="font-mono text-xs text-theme-dark">{{ color }}</span>
+                  <div class="w-5 h-5 border border-white/20" :style="{ background: color }"></div>
+                  <span class="font-mono text-xs text-white">{{ color }}</span>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Raw JSON tab -->
-          <div v-if="activeTab === 'raw'" class="bg-theme-card-bg p-4 border border-theme-border overflow-hidden">
-            <pre class="text-xs font-mono text-theme-muted overflow-auto max-h-[600px] whitespace-pre-wrap pr-2">{{ JSON.stringify(result.curated, null, 2) }}</pre>
+          <div v-if="activeTab === 'raw'" class="bg-neutral-900 p-4 border border-white/10 rounded-xl overflow-hidden">
+            <pre class="text-xs font-mono text-neutral-400 overflow-auto max-h-[600px] whitespace-pre-wrap pr-2">{{ JSON.stringify(result.curated, null, 2) }}</pre>
           </div>
         </div>
       </div>

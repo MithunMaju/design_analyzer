@@ -23,12 +23,15 @@ export default {
         muted: '#52526a',
         foreground: '#e2e2f0',
         dim: '#8888a8',
+        'accent-chrono': '#824873',
+        'bg-chrono': '#030303',
+        'card-chrono': '#0c0c0e',
         theme: {
-          bg: '#f5f5f3',
-          dark: '#111111',
-          muted: '#777777',
-          border: '#e2e2df',
-          'card-bg': '#ffffff',
+          bg: '#000000',
+          dark: '#ffffff',
+          muted: '#8e8e93',
+          border: '#1c1c1e',
+          'card-bg': '#0d0d0e',
         }
       },
       animation: {
