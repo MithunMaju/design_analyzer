@@ -347,12 +347,11 @@ export function generateFallbackSvg(item: any): string {
   const colors = extractColors(item);
   const fontData = detectFontFamily(item);
 
-  const primaryHex = colors.primary || '#635bff';
-  const isDark = colors.isDark;
+  const primaryHex = '#824873'; // Fixed to ChronoTask plum brand color
+  const isDark = false;        // Force light mode for consistent white-grid ledger layout
+  const textColor = '#2e1828'; // High-contrast dark charcoal-plum
 
   // Setup text contrast color
-  const textColor = isDark ? '#ffffff' : '#18181b';
-
   // Dynamic font size based on domain length
   let fontSize = 80;
   if (domain.length > 12) fontSize = 64;
@@ -365,8 +364,8 @@ export function generateFallbackSvg(item: any): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="100%" height="100%">
     <defs>
       <linearGradient id="brand-grad-${gradKey}" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="${primaryHex}" stop-opacity="${isDark ? 0.22 : 0.14}" />
-        <stop offset="100%" stop-color="${isDark ? '#0c0c0e' : '#e4e4e7'}" stop-opacity="${isDark ? 0.98 : 0.95}" />
+        <stop offset="0%" stop-color="${primaryHex}" stop-opacity="0.06" />
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0.98" />
       </linearGradient>
     </defs>
     
@@ -380,13 +379,13 @@ export function generateFallbackSvg(item: any): string {
     </style>
 
     <!-- Background solid -->
-    <rect width="1200" height="630" fill="${isDark ? '#0c0c0e' : '#ffffff'}" />
+    <rect width="1200" height="630" fill="#ffffff" />
     
     <!-- Brand Gradient Overlay -->
     <rect width="1200" height="630" fill="url(#brand-grad-${gradKey})" />
     
     <!-- Decorative subtle border inside -->
-    <rect x="4" y="4" width="1192" height="622" fill="none" stroke="${isDark ? '#ffffff' : '#000000'}" stroke-opacity="0.04" stroke-width="4" />
+    <rect x="4" y="4" width="1192" height="622" fill="none" stroke="${primaryHex}" stroke-opacity="0.06" stroke-width="4" />
 
     <!-- Centered Brand Title (Domain name only) -->
     <text 
