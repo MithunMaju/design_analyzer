@@ -347,9 +347,9 @@ export function generateFallbackSvg(item: any): string {
   const colors = extractColors(item);
   const fontData = detectFontFamily(item);
 
-  const primaryHex = '#824873'; // Fixed to ChronoTask plum brand color
+  const primaryHex = '#208b9b'; // Fixed to Finpay brand teal color
   const isDark = false;        // Force light mode for consistent white-grid ledger layout
-  const textColor = '#2e1828'; // High-contrast dark charcoal-plum
+  const textColor = '#092230'; // High-contrast dark charcoal-navy
 
   // Setup text contrast color
   // Dynamic font size based on domain length
